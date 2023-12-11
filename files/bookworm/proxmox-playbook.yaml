@@ -13,6 +13,8 @@
     system_network_hosts:
       - { ip: "{{ ansible_default_ipv4['address'] }}",    name: "{{ ansible_hostname }}" }
 
+    iptables_apply_changes: false
+    iptables_ipset_enabled: false
     iptables_configuration_template: iptables_proxmox.j2
     iptables6_configuration_template: iptables6_proxmox.j2
   roles:
