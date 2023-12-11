@@ -53,3 +53,9 @@ Deploy debian to the server
 ```shell
 ansible-playbook -Dv -i debian.ini debian.yml
 ```
+
+# Resources
+
+- https://www.debian.org/releases/bookworm/example-preseed.txt
+- https://preseed.debian.net/debian-preseed/bullseye/amd64-main-full.txt
+- https://www.debian.org/releases/buster/amd64/apbs02.en.html
