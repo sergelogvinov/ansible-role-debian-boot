@@ -1,0 +1,9 @@
+#!/bin/sh
+exec tail -n +3 $0
+
+{% set mounts = ansible_mounts | map(attribute='mount') | list %}
+{% if "/boot" in mounts %}{% set boot_folder = "" %}{% else %}{% set boot_folder = "/boot" %}{% endif %}
+menuentry "Debian Net Installer" {
+    linux {{ boot_folder }}/debian-kernel {{ debian_cmdline }} {{ debian_cmdline_net }} {{ debian_cmdline_addon }}
+    initrd {{ boot_folder }}/debian-initrd.xz
+}

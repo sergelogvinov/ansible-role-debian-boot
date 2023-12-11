@@ -1,0 +1,5 @@
+
+debian_kernel: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-amd64/current/images/netboot/debian-installer/amd64/linux"
+debian_kernel_sha: sha256:843aec866adf10d9cce3406f61e5e2b760b5f8a64fd33a9e41be30c1c2c83368
+debian_initrd: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-amd64/current/images/netboot/debian-installer/amd64/initrd.gz"
+debian_initrd_sha: sha256:898aafd2dc0206fbd7ad10a599aaf65b181acf97bc5ddb3113aed1b30c88e326

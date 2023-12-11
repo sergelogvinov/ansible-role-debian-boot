@@ -1,0 +1,5 @@
+
+debian_kernel: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux"
+debian_kernel_sha: sha256:
+debian_initrd: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz"
+debian_initrd_sha: sha256:
