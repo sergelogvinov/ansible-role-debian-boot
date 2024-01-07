@@ -37,6 +37,14 @@
   when: debian_grub and ansible_os_family == "RedHat"
   notify: Update-grub
 
+- name: Network helper
+  become: yes
+  template:
+    src: network.sh.j2
+    dest: /boot/network.sh
+    mode: 0744
+  when: debian_grub
+
 - meta: flush_handlers
 
 - name: packages (debian)

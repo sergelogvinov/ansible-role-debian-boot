@@ -1,6 +1,5 @@
 - hosts: 127.0.0.1
   vars:
-    system_auto_upgrade: true
     system_packages:
       - tcpdump
       - htop
@@ -10,6 +9,8 @@
     system_sysctl:
       - { name: net.ipv4.ip_forward,          value: 1 }
       - { name: net.ipv6.conf.all.forwarding, value: 1 }
+    system_network: true
+    system_network_interface: interfaces-proxmox.j2
     system_network_hosts:
       - { ip: "{{ ansible_default_ipv4['address'] }}",    name: "{{ ansible_hostname }}" }
 
