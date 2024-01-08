@@ -4,8 +4,8 @@ modprobe bonding
 
 {% for interface in ansible_interfaces|sort %}
 {% set iface = ansible_facts[interface] %}
-{% if iface.type is defined and iface.type == "ether" and (iface['active'] | default(false)) %}
-# {{ interface }} -> {{ iface.perm_macaddress }} -> {{ iface.pciid }}
+{% if iface.type is defined and iface.type == "ether" %}
+# {{ interface }} -> {{ iface.pciid }}/{{ iface.perm_macaddress }}
 {% endif %}
 {% endfor %}
 
@@ -13,20 +13,22 @@ modprobe bonding
 {% set iface = ansible_facts[interface] %}
 {% if iface.type is defined and iface.type == "bonding" and (iface['active'] | default(false)) %}
 
+ip link add {{ interface }} type bond
 {% for slave in iface.slaves %}
 ip link set {{ slave }} down
 {% endfor %}
 ip link set {{ interface }} down
-echo "{{ iface.mode | default('802.3ad') }}" > /sys/class/net/bond0/bonding/mode
-echo "{{ iface.miimon | default(100) }}" > /sys/class/net/bond0/bonding/miimon
+echo "{{ iface.mode | default('802.3ad') }}" > /sys/class/net/{{ interface }}/bonding/mode
+echo "{{ iface.miimon | default(100) }}" > /sys/class/net/{{ interface }}/bonding/miimon
 {% for slave in iface.slaves %}
-echo "+{{ slave }}" > /sys/class/net/bond0/bonding/slaves
+echo "+{{ slave }}" > /sys/class/net/{{ interface }}/bonding/slaves
 {% endfor %}
 ip link set {{ interface }} up
-{% for slave in iface.slaves %}
-ip link set {{ slave }} up
-{% endfor %}
-ip addr add {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }} dev {{ interface }}
-ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ interface }}
+{% if iface.ipv4.address is defined %}
+ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
+{% endif %}
 {% endif %}
 {% endfor %}
+
+ip addr add {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }} dev {{ ansible_default_ipv4.interface }}
+ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ ansible_default_ipv4.interface }}
