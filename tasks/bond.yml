@@ -1,0 +1,55 @@
+
+- name: Prepare directory
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /boot/preseed
+    - /boot/preseed/etc/udev/rules.d
+    - /boot/preseed/lib/debian-installer-startup.d
+
+- name: Copy preseed
+  become: yes
+  copy:
+    src: "bookworm/proxmox.cfg"
+    dest: "/boot/preseed/proxmox.cfg"
+    mode: 0644
+  register: preseed
+
+- name: Bonding helpers
+  become: yes
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
+    mode: 0755
+  with_items:
+    - { name: network.sh,               path: /boot/preseed }
+    - { name: 70-persistent-net.rules,  path: /boot/preseed/etc/udev/rules.d }
+    - { name: S05bonding-interfaces,    path: /boot/preseed/lib/debian-installer-startup.d }
+  register: helpers
+
+- name: Prepend initrd
+  become: yes
+  shell:
+    cmd: gunzip -c /boot/debian-initrd.gz > /boot/debian-initrd-preseed
+    chdir: /boot
+  when: preseed.changed or helpers.changed
+
+  # to check resoult: cpio -tv < debian-initrd-preseed
+- name: Add preseed.cfg to initrd
+  become: yes
+  shell:
+    cmd: find . | cpio -H newc -o -A -F ../debian-initrd-preseed
+    chdir: /boot/preseed
+  when: preseed.changed or helpers.changed
+
+- name: Compress initrd
+  become: yes
+  shell:
+    cmd: rm -f debian-initrd-preseed.gz && gzip -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
+    chdir: /boot
+  when: preseed.changed or helpers.changed

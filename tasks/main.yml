@@ -9,7 +9,7 @@
     - "../vars/{{ ansible_architecture }}.yml"
     - "../vars/empty.yml"
 
-- name: Get Talos
+- name: Get debian kernel
   become: yes
   get_url:
     url: "{{ item.url }}"
@@ -17,7 +17,7 @@
     checksum: ""
   with_items:
     - { url: "{{ debian_kernel }}", checksum: "{{ debian_kernel_sha }}", name: debian-kernel     }
-    - { url: "{{ debian_initrd }}", checksum: "{{ debian_initrd_sha }}", name: debian-initrd.xz  }
+    - { url: "{{ debian_initrd }}", checksum: "{{ debian_initrd_sha }}", name: debian-initrd.gz  }
 
 - name: Add grub menu (debian)
   become: yes
@@ -37,13 +37,8 @@
   when: debian_grub and ansible_os_family == "RedHat"
   notify: Update-grub
 
-- name: Network helper
-  become: yes
-  template:
-    src: network.sh.j2
-    dest: /boot/network.sh
-    mode: 0744
-  when: debian_grub
+- import_tasks: bond.yml
+  when: debian_rebuild_initrd
 
 - meta: flush_handlers
 
@@ -62,7 +57,7 @@
       register: result
       failed_when: result.rc != 0
       with_items:
-        - "-l /boot/debian-kernel --initrd=/boot/debian-initrd.xz --append=\"{{ debian_cmdline }} {{ debian_cmdline_net }} {{ debian_cmdline_addon }}\""
+        - "-l /boot/debian-kernel --initrd=/boot/debian-initrd{{ '-preseed' if debian_rebuild_initrd }}.gz --append=\"{{ debian_cmdline }} {{ debian_cmdline_net }} {{ debian_cmdline_addon }}\""
         - "-e"
       when: debian_kexec
 

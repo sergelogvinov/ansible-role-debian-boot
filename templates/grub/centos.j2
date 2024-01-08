@@ -2,6 +2,6 @@
 exec tail -n +3 $0
 
 menuentry "Debian Net Installer" {
-    linux ($root)/debian-kernel {{ debian_cmdline }} {{ debian_cmdline_net }} {{ debian_cmdline_addon }}
-    initrd ($root)/debian-initrd.xz
+    linux ($root)/debian-kernel {{ debian_cmdline }} {{ debian_cmdline_net }} {{ 'file=/proxmox.cfg' if debian_rebuild_initrd else debian_cmdline_addon }}
+    initrd ($root)/debian-initrd{{ "-preseed" if debian_rebuild_initrd }}.gz
 }
