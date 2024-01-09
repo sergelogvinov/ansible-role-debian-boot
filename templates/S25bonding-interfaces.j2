@@ -1,0 +1,51 @@
+#!/bin/sh
+
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+{% for ns in ansible_dns.nameservers[:2] %}
+echo "nameserver {{ ns }}" >> /etc/resolv.conf
+{% endfor %}
+cp /etc/resolv.conf /etc/resolv.conf.debian
+
+modprobe bonding
+
+{% set slaves = [] %}
+{% for interface in ansible_interfaces|sort %}
+{% set iface = ansible_facts[interface] %}
+{% if iface.type is defined and iface.type == "bonding" and (iface['active'] | default(false)) %}
+logger -t debian-boot "INFO: configure bonding {{ interface }}"
+
+ip link add {{ interface }} type bond ||:
+ip link set {{ interface }} down
+ip link set {{ interface }} mtu {{ iface.mtu | default(1500) }}
+ip link set dev {{ interface }} address "{{ iface.macaddress }}"
+
+echo "{{ iface.mode }}" > /sys/class/net/{{ interface }}/bonding/mode ||:
+{% if iface.mode == '802.3ad' %}
+echo "{{ iface.miimon | default(100) }}" > /sys/class/net/{{ interface }}/bonding/miimon
+echo "{{ iface.lacp_rate | default('fast') }}" > /sys/class/net/{{ interface }}/bonding/lacp_rate
+{% endif %}
+echo "1" > /sys/class/net/{{ interface }}/bonding/min_links
+
+{% for slave in iface.slaves %}{{ slaves.append(slave) }}
+ip link set {{ slave }} down
+echo "+{{ slave }}" > /sys/class/net/{{ interface }}/bonding/slaves ||:
+ip link set {{ slave }} up
+{% endfor %}
+
+{% if iface.ipv4.address is defined %}
+ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
+{% endif %}
+
+ip link set {{ interface }} up
+{% endif %}
+{% endfor %}
+
+logger -t debian-boot "INFO: set defaul route on {{ debian_interface }}"
+ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }}
+
+sleep 5
+ping -c 4 1.1.1.1 || logger -t debian-boot "INFO: network unreachable"
+logger -t debian-boot "INFO: network init done"
+
+logger -t debian-boot "INFO: start linkup in background"
+screen -t linkup -dmS linkup /usr/bin/if-keep-up.sh {{ slaves | join(' ') }}

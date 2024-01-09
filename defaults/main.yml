@@ -2,11 +2,16 @@
 debian_version: bookworm
 
 debian_console: ""
-debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en_US.UTF-8 priority=critical"
-
 debian_interface: "{{ ansible_default_ipv4['interface'] }}"
+
+# https://www.debian.org/releases/buster/amd64/apbs02.en.html
+debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en_US.UTF-8 priority=critical {{ debian_cmdline_net }} {{ debian_cmdline_addon }}"
 debian_cmdline_net: "interface={{ debian_interface }} netcfg/disable_dhcp=true netcfg/get_ipaddress={{ ansible_default_ipv4['address'] }} netcfg/get_netmask={{ ansible_default_ipv4['netmask'] }} netcfg/get_gateway={{ ansible_default_ipv4['gateway'] }} netcfg/get_nameservers=1.1.1.1 hostname={{ inventory_hostname }} domain={{ ansible_domain }}"
-debian_cmdline_addon: "url=https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox.cfg"
+
+debian_cmdline_addon: ""
+
+debian_preseed: "proxmox.cfg"
+# debian_preseed: "https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox.cfg"
 
 debian_grub: false
 debian_kexec: false

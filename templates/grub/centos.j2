@@ -1,7 +1,8 @@
 #!/bin/sh
 exec tail -n +3 $0
 
+{% set url = "url="+debian_preseed if debian_preseed is url else "url=https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/"+debian_version+"/"+debian_preseed %}
 menuentry "Debian Net Installer" {
-    linux ($root)/debian-kernel {{ debian_cmdline }} {{ debian_cmdline_net }} {{ 'file=/proxmox.cfg' if debian_rebuild_initrd else debian_cmdline_addon }}
+    linux ($root)/debian-kernel {{ debian_cmdline }} {{ 'file=/debian-preseed.cfg' if debian_rebuild_initrd else url }}
     initrd ($root)/debian-initrd{{ "-preseed" if debian_rebuild_initrd }}.gz
 }

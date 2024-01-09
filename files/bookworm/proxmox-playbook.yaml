@@ -20,5 +20,4 @@
     iptables6_configuration_template: iptables6_proxmox.j2
   roles:
     - ansible-role-system
-    - ansible-role-users
     - ansible-role-iptables

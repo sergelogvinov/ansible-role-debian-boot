@@ -10,15 +10,26 @@
   with_items:
     - /boot/preseed
     - /boot/preseed/etc/udev/rules.d
-    - /boot/preseed/lib/debian-installer-startup.d
+    - /boot/preseed/lib/debian-installer.d
+    - /boot/preseed/usr/bin
 
-- name: Copy preseed
+- name: Copy preseed from local
   become: yes
   copy:
-    src: "bookworm/proxmox.cfg"
-    dest: "/boot/preseed/proxmox.cfg"
+    src: "{{ debian_version }}/{{ debian_preseed }}"
+    dest: "/boot/preseed/debian-preseed.cfg"
     mode: 0644
-  register: preseed
+  when: debian_preseed is not url
+  register: preseed_local
+
+- name: Copy preseed from url
+  become: yes
+  get_url:
+    url: "{{ debian_preseed }}"
+    dest: "/boot/preseed/debian-preseed.cfg"
+    mode: 0644
+  when: debian_preseed is url
+  register: preseed_url
 
 - name: Bonding helpers
   become: yes
@@ -29,27 +40,26 @@
   with_items:
     - { name: network.sh,               path: /boot/preseed }
     - { name: 70-persistent-net.rules,  path: /boot/preseed/etc/udev/rules.d }
-    - { name: S05bonding-interfaces,    path: /boot/preseed/lib/debian-installer-startup.d }
+    - { name: S25bonding-interfaces,    path: /boot/preseed/lib/debian-installer.d }
+    - { name: if-keep-up.sh,            path: /boot/preseed/usr/bin }
   register: helpers
 
-- name: Prepend initrd
+- name: Repack initrd
   become: yes
-  shell:
-    cmd: gunzip -c /boot/debian-initrd.gz > /boot/debian-initrd-preseed
-    chdir: /boot
-  when: preseed.changed or helpers.changed
+  when: preseed_local.changed or preseed_url.changed or helpers.changed
+  block:
+    - name: Prepend initrd
+      shell:
+        cmd: gunzip -c /boot/debian-initrd.gz > /boot/debian-initrd-preseed
+        chdir: /boot
 
-  # to check resoult: cpio -tv < debian-initrd-preseed
-- name: Add preseed.cfg to initrd
-  become: yes
-  shell:
-    cmd: find . | cpio -H newc -o -A -F ../debian-initrd-preseed
-    chdir: /boot/preseed
-  when: preseed.changed or helpers.changed
+      # to check resoult: cpio -tv < debian-initrd-preseed
+    - name: Add preseed.cfg to initrd
+      shell:
+        cmd: find . -type f | cpio -H newc -o -A -F ../debian-initrd-preseed
+        chdir: /boot/preseed
 
-- name: Compress initrd
-  become: yes
-  shell:
-    cmd: rm -f debian-initrd-preseed.gz && gzip -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
-    chdir: /boot
-  when: preseed.changed or helpers.changed
+    - name: Compress initrd
+      shell:
+        cmd: rm -f debian-initrd-preseed.gz && gzip -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
+        chdir: /boot
