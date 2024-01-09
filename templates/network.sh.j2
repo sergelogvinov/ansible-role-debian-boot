@@ -30,5 +30,5 @@ ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
 {% endif %}
 {% endfor %}
 
-ip addr add {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }} dev {{ ansible_default_ipv4.interface }}
+ip addr add {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.prefix }} dev {{ ansible_default_ipv4.interface }}
 ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ ansible_default_ipv4.interface }}

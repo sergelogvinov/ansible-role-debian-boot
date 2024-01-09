@@ -44,7 +44,7 @@ logger -t debian-boot "INFO: set defaul route on {{ debian_interface }}"
 ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }}
 
 sleep 5
-ping -c 4 1.1.1.1 || logger -t debian-boot "INFO: network unreachable"
+ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: network unreachable"
 logger -t debian-boot "INFO: network init done"
 
 logger -t debian-boot "INFO: start linkup in background"
