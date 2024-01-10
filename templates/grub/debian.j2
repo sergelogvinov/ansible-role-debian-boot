@@ -2,9 +2,8 @@
 exec tail -n +3 $0
 
 {% set mounts = ansible_mounts | map(attribute='mount') | list %}
-{% set url = "url="+debian_preseed if debian_preseed is url else "url=https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/"+debian_version+"/"+debian_preseed %}
 {% if "/boot" in mounts %}{% set boot_folder = "" %}{% else %}{% set boot_folder = "/boot" %}{% endif %}
 menuentry "Debian Net Installer" {
-    linux {{ boot_folder }}/debian-kernel {{ debian_cmdline }} {{ 'file=/debian-preseed.cfg' if debian_rebuild_initrd else url }}
+    linux {{ boot_folder }}/debian-kernel {{ debian_cmdline }} {{ 'file=/debian-preseed.cfg' if debian_rebuild_initrd else debian_preseed_url }}
     initrd {{ boot_folder }}/debian-initrd{{ "-preseed" if debian_rebuild_initrd }}.gz
 }

@@ -9,6 +9,9 @@
     - "../vars/{{ ansible_architecture }}.yml"
     - "../vars/empty.yml"
 
+- include_vars:
+    file: default.yml
+
 - name: Get debian kernel
   become: yes
   get_url:
@@ -48,8 +51,19 @@
     name: 'kexec-tools'
   when: debian_kexec and ansible_os_family == "Debian"
 
+- name: packages (centos)
+  become: yes
+  yum:
+    name: 'kexec-tools'
+  when: debian_kexec and ansible_os_family == "RedHat"
+
 - name: Run debian installer
+  when: debian_kexec
   block:
+    - name: Run sync
+      become: yes
+      command: "sync"
+
     - name: Run kexec
       become: yes
       command: "kexec {{ item }}"
@@ -57,9 +71,8 @@
       register: result
       failed_when: result.rc != 0
       with_items:
-        - "-l /boot/debian-kernel --initrd=/boot/debian-initrd{{ '-preseed' if debian_rebuild_initrd }}.gz --append=\"{{ debian_cmdline }} {{ debian_cmdline_net }} {{ debian_cmdline_addon }}\""
+        - "-l /boot/debian-kernel --initrd=/boot/debian-initrd{{ '-preseed' if debian_rebuild_initrd }}.gz --append=\"{{ debian_cmdline }} {{ 'file=/debian-preseed.cfg' if debian_rebuild_initrd else debian_preseed_url }} {{ debian_cmdline_addon }}\""
         - "-e"
-      when: debian_kexec
 
   rescue:
     - name: check server

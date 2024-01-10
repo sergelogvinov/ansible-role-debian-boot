@@ -9,39 +9,41 @@ cp /etc/resolv.conf /etc/resolv.conf.debian
 modprobe bonding
 
 {% set slaves = [] %}
+{% set inx = namespace(value=0) %}
 {% for interface in ansible_interfaces|sort %}
 {% set iface = ansible_facts[interface] %}
-{% if iface.type is defined and iface.type == "bonding" and (iface['active'] | default(false)) %}
-logger -t debian-boot "INFO: configure bonding {{ interface }}"
+{% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}
+logger -t debian-boot "INFO: configure bonding bond{{ inx.value }}"
 
-ip link add {{ interface }} type bond ||:
-ip link set {{ interface }} down
-ip link set {{ interface }} mtu {{ iface.mtu | default(1500) }}
-ip link set dev {{ interface }} address "{{ iface.macaddress }}"
+ip link add bond{{ inx.value }} type bond ||:
+ip link set bond{{ inx.value }} down
+ip link set bond{{ inx.value }} mtu {{ iface.mtu | default(1500) }}
+ip link set dev bond{{ inx.value }} address "{{ iface.macaddress }}"
 
-echo "{{ iface.mode }}" > /sys/class/net/{{ interface }}/bonding/mode ||:
+echo "{{ iface.mode }}" > /sys/class/net/bond{{ inx.value }}/bonding/mode ||:
 {% if iface.mode == '802.3ad' %}
-echo "{{ iface.miimon | default(100) }}" > /sys/class/net/{{ interface }}/bonding/miimon
-echo "{{ iface.lacp_rate | default('fast') }}" > /sys/class/net/{{ interface }}/bonding/lacp_rate
+echo "{{ iface.miimon | default(100) }}" > /sys/class/net/bond{{ inx.value }}/bonding/miimon
+echo "{{ iface.lacp_rate | default('fast') }}" > /sys/class/net/bond{{ inx.value }}/bonding/lacp_rate
 {% endif %}
-echo "1" > /sys/class/net/{{ interface }}/bonding/min_links
+echo "1" > /sys/class/net/bond{{ inx.value }}/bonding/min_links
 
 {% for slave in iface.slaves %}{{ slaves.append(slave) }}
 ip link set {{ slave }} down
-echo "+{{ slave }}" > /sys/class/net/{{ interface }}/bonding/slaves ||:
+echo "+{{ slave }}" > /sys/class/net/bond{{ inx.value }}/bonding/slaves ||:
 ip link set {{ slave }} up
 {% endfor %}
 
 {% if iface.ipv4.address is defined %}
-ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
+ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev bond{{ inx.value }} ||:
 {% endif %}
 
-ip link set {{ interface }} up
+ip link set bond{{ inx.value }} up
+{% set inx.value = inx.value + 1 %}
 {% endif %}
 {% endfor %}
 
 logger -t debian-boot "INFO: set defaul route on {{ debian_interface }}"
-ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }}
+ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }} ||:
 
 sleep 5
 ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: network unreachable"

@@ -1,0 +1,2 @@
+
+debian_preseed_url: "url={{ debian_preseed if debian_preseed is url else 'https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/'+debian_version+'/'+debian_preseed }}"
