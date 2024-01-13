@@ -15,7 +15,7 @@ modprobe bonding
 {% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}
 logger -t debian-boot "INFO: configure bonding bond{{ inx.value }}"
 
-ip link add bond{{ inx.value }} type bond ||:
+ip link add bond{{ inx.value }} type bond 2>/dev/null ||:
 ip link set bond{{ inx.value }} down
 ip link set bond{{ inx.value }} mtu {{ iface.mtu | default(1500) }}
 ip link set dev bond{{ inx.value }} address "{{ iface.macaddress }}"
@@ -25,7 +25,7 @@ echo "{{ iface.mode }}" > /sys/class/net/bond{{ inx.value }}/bonding/mode ||:
 echo "{{ iface.miimon | default(100) }}" > /sys/class/net/bond{{ inx.value }}/bonding/miimon
 echo "{{ iface.lacp_rate | default('fast') }}" > /sys/class/net/bond{{ inx.value }}/bonding/lacp_rate
 {% endif %}
-echo "1" > /sys/class/net/bond{{ inx.value }}/bonding/min_links
+echo "1" > /sys/class/net/bond{{ inx.value }}/bonding/min_links ||:
 
 {% for slave in iface.slaves %}{{ slaves.append(slave) }}
 ip link set {{ slave }} down
@@ -50,4 +50,6 @@ ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: network unreachable
 logger -t debian-boot "INFO: network init done"
 
 logger -t debian-boot "INFO: start linkup in background"
-screen -t linkup -dmS linkup /usr/bin/if-keep-up.sh {{ slaves | join(' ') }}
+{% if slaves|length > 0 %}
+screen -c /dev/null -t linkup -dmS linkup /usr/bin/if-keep-up.sh {{ slaves | join(' ') }}
+{% endif %}

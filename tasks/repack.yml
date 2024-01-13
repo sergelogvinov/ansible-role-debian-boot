@@ -1,0 +1,19 @@
+
+- name: Repack-initrd
+  become: yes
+  block:
+    - name: Prepend initrd
+      shell:
+        cmd: gunzip -c /boot/debian-initrd.gz > /boot/debian-initrd-preseed
+        chdir: /boot
+
+      # to check resoult: cpio -tv < debian-initrd-preseed
+    - name: Add preseed.cfg to initrd
+      shell:
+        cmd: find . | cpio -H newc -o -A -F ../debian-initrd-preseed
+        chdir: /boot/preseed
+
+    - name: Compress initrd
+      shell:
+        cmd: rm -f debian-initrd-preseed.gz && gzip -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
+        chdir: /boot

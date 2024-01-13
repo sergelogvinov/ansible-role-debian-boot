@@ -1,0 +1,27 @@
+#
+
+Port 22
+Protocol 2
+
+SyslogFacility AUTH
+LogLevel INFO
+
+AllowUsers root
+AuthorizedKeysFile /etc/ssh/authorized_keys
+PermitRootLogin without-password
+
+IgnoreRhosts yes
+HostbasedAuthentication no
+
+PasswordAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication yes
+StrictModes yes
+
+AllowTcpForwarding no
+X11Forwarding no
+UseDNS no
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key

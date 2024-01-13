@@ -1,0 +1,41 @@
+
+- name: Prepare directory
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /boot/preseed
+    - /boot/preseed/etc/ssh
+    - /boot/preseed/lib/debian-installer.d
+
+- name: Copy sshd files
+  become: yes
+  copy:
+    src: "/etc/ssh/{{ item }}"
+    dest: "/boot/preseed/etc/ssh/{{ item }}"
+    remote_src: yes
+    mode: 0600
+  with_items:
+    - ssh_host_ecdsa_key
+    - ssh_host_ecdsa_key.pub
+    - ssh_host_ed25519_key
+    - ssh_host_ed25519_key.pub
+    - ssh_host_rsa_key
+    - ssh_host_rsa_key.pub
+  notify: Repack-initrd
+
+- name: Sshd config
+  become: yes
+  template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: sshd_config,      mode: "0644", path: /boot/preseed/etc/ssh }
+    - { name: authorized_keys,  mode: "0644", path: /boot/preseed/etc/ssh }
+    - { name: S60sshd,          mode: "0755", path: /boot/preseed/lib/debian-installer.d }
+  notify: Repack-initrd

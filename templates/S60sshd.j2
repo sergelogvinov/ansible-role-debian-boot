@@ -1,0 +1,7 @@
+#!/bin/sh
+
+logger -t debian-boot "INFO: start sshd in background"
+
+grep -qs ^nogroup: /etc/group || echo "nogroup:*:65534:" >> /etc/group
+grep -qs ^sshd: /etc/passwd || echo "sshd:*:100:65534::/run:/bin/false" >> /etc/passwd
+[ -x /usr/sbin/sshd ] && /usr/sbin/sshd ||:

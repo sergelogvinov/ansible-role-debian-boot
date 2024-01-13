@@ -9,9 +9,11 @@ debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en
 debian_cmdline_net: "interface={{ debian_interface }} netcfg/disable_dhcp=true netcfg/get_ipaddress={{ ansible_default_ipv4['address'] }} netcfg/get_netmask={{ ansible_default_ipv4['netmask'] }} netcfg/get_gateway={{ ansible_default_ipv4['gateway'] }} netcfg/get_nameservers=1.1.1.1 hostname={{ inventory_hostname }} domain={{ ansible_domain }}"
 
 debian_cmdline_addon: ""
+# debian_cmdline_addon: anna/choose_modules=network-console
 
 debian_preseed: "proxmox.cfg"
 # debian_preseed: "https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox.cfg"
+debian_sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDd+wfWIKi1dDZuCsd/zNw2n4WuHHa21N/Ltmo3umH2d" # "https://github.com/sergelogvinov.keys"
 
 debian_grub: false
 debian_kexec: false
