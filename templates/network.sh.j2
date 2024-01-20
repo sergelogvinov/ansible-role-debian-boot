@@ -1,6 +1,19 @@
 #!/bin/sh
+#
+# This file for manual configuration of network interfaces
+# It is not used by default
+#
 
+{% set bonds = [] %}
+{% for interface in ansible_interfaces|sort %}
+{% set iface = ansible_facts[interface] %}
+{% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}{{ bonds.append(interface) }}
+{% endif %}
+{% endfor %}
+
+{% if bonds|length > 0 %}
 modprobe bonding
+{% endif %}
 
 {% for interface in ansible_interfaces|sort %}
 {% set iface = ansible_facts[interface] %}
@@ -27,8 +40,22 @@ ip link set {{ interface }} up
 {% if iface.ipv4.address is defined %}
 ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
 {% endif %}
+{% elif iface.type is defined and iface.type == "ether" %}
+{% if iface.ipv4.address is defined and iface.ipv4.address != ansible_default_ipv4.address %}
+ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev {{ interface }}
+{% endif %}
+{% if iface.ipv6 is defined %}{% for addr in iface.ipv6 %}{% if addr.address[:4] != 'fe80' and addr.address != ansible_default_ipv6.address %}
+ip addr add {{ addr.address }}/{{ addr.prefix }} dev {{ interface }}
+{% endif %}{% endfor %}{% endif %}
+
 {% endif %}
 {% endfor %}
 
+{% if ansible_default_ipv4.gateway is defined %}
 ip addr add {{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.prefix }} dev {{ ansible_default_ipv4.interface }}
-ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ ansible_default_ipv4.interface }}
+ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ ansible_default_ipv4.interface }} metric 2048
+{% endif %}
+{% if ansible_default_ipv6.gateway is defined %}
+ip addr add {{ ansible_default_ipv6.address }}/{{ ansible_default_ipv6.prefix }} dev {{ ansible_default_ipv6.interface }}
+ip -6 route add default via {{ ansible_default_ipv6.gateway }} dev {{ ansible_default_ipv6.interface }} metric 2048 onlink
+{% endif %}

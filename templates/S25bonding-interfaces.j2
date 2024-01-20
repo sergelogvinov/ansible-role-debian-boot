@@ -1,18 +1,29 @@
 #!/bin/sh
 
-echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "options timeout:5 attempts:3" > /etc/resolv.conf
+{% if not '1.1.1.1' in ansible_dns.nameservers %}
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+{% endif %}
 {% for ns in ansible_dns.nameservers[:2] %}
 echo "nameserver {{ ns }}" >> /etc/resolv.conf
 {% endfor %}
 cp /etc/resolv.conf /etc/resolv.conf.debian
 
+{% set bonds = [] %}
+{% for interface in ansible_interfaces|sort %}
+{% set iface = ansible_facts[interface] %}
+{% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}{{ bonds.append(interface) }}
+{% endif %}
+{% endfor %}
+
+{% if bonds|length > 0 %}
 modprobe bonding
+{% endif %}
 
 {% set slaves = [] %}
 {% set inx = namespace(value=0) %}
-{% for interface in ansible_interfaces|sort %}
+{% for interface in bonds|sort %}
 {% set iface = ansible_facts[interface] %}
-{% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}
 logger -t debian-boot "INFO: configure bonding bond{{ inx.value }}"
 
 ip link add bond{{ inx.value }} type bond 2>/dev/null ||:
@@ -39,14 +50,23 @@ ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev bond{{ inx.valu
 
 ip link set bond{{ inx.value }} up
 {% set inx.value = inx.value + 1 %}
-{% endif %}
 {% endfor %}
 
-logger -t debian-boot "INFO: set defaul route on {{ debian_interface }}"
-ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }} ||:
+logger -t debian-boot "INFO: set default route on {{ debian_interface }}"
+{% if ansible_default_ipv4.gateway is defined %}
+ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }} metric 2048 ||:
+{% endif %}
+{% if ansible_default_ipv6.address is defined and ansible_default_ipv6.address[:4] != 'fe80' %}
+ip -6 route add default via {{ ansible_default_ipv6.gateway }} dev {{ debian_interface }} metric 2048 ||:
+{% endif %}
 
 sleep 5
-ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: network unreachable"
+{% if ansible_default_ipv4.gateway is defined %}
+ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: global network ipv4 is unreachable"
+{% endif %}
+{% if ansible_default_ipv6.gateway is defined %}
+ping -6 -c 4 2606:4700:4700::1111 >/dev/null || logger -t debian-boot "INFO: global network ipv6 is unreachable"
+{% endif %}
 logger -t debian-boot "INFO: network init done"
 
 logger -t debian-boot "INFO: start linkup in background"

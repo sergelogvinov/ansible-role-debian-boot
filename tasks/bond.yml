@@ -1,18 +1,4 @@
 
-- name: Prepare directory
-  become: yes
-  file:
-    path: "{{ item }}"
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-  with_items:
-    - /boot/preseed
-    - /boot/preseed/etc/udev/rules.d
-    - /boot/preseed/lib/debian-installer.d
-    - /boot/preseed/usr/bin
-
 - name: Copy preseed from local
   become: yes
   copy:
