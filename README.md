@@ -2,7 +2,7 @@
 
 If your server does not have DHCP, PXE, or IPMI in your network, it can be challenging to automate the deployment of Debian operating systems.
 In such cases, you may want to consider using an Ansible role to simplify the process.
-This role downloads the Talos kernel and launch the OS by command `kexec -l <kernel-image> --initrd=<initrd-image> --append=<kernel-command-line-args>`.
+This role downloads the [Debian Net Installer](https://www.debian.org/CD/netinst/) kernel and launch the OS by command `kexec -l <kernel-image> --initrd=<initrd-image> --append=<kernel-command-line-args>`.
 It also sets the networks configuration in kernel parameters, witch helps you to boot OS with static IP.
 
 Unfortunately, not all servers support booting a kernel through kexec.
