@@ -12,6 +12,18 @@
 - include_vars:
     file: default.yml
 
+- name: packages (debian)
+  become: yes
+  apt:
+    name: 'rsync'
+  when: ansible_os_family == "Debian"
+
+- name: packages (centos)
+  become: yes
+  yum:
+    name: 'rsync'
+  when: ansible_os_family == "RedHat"
+
 - name: Get debian kernel
   become: yes
   get_url:
