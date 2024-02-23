@@ -35,8 +35,9 @@ d-i keymap select en
 d-i time/zone string Etc/UTC
 
 # Mirror
-d-i mirror/country string manual
-d-i mirror/http/hostname string {{debian_preseed_mirror}}
+d-i mirror/country string {{ 'manual' if debian_preseed_mirror else 'NL' }}
+d-i mirror/http/mirror select deb.debian.org
+d-i mirror/http/hostname string {{ debian_preseed_mirror if debian_preseed_mirror else 'deb.debian.org' }}
 d-i mirror/http/directory string /debian
 d-i mirror/http/proxy string
 

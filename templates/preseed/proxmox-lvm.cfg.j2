@@ -35,8 +35,9 @@ d-i keymap select en
 d-i time/zone string Etc/UTC
 
 # Mirror
-d-i mirror/country string manual
-d-i mirror/http/hostname string {{debian_preseed_mirror}}
+d-i mirror/country string {{ 'manual' if debian_preseed_mirror else 'NL' }}
+d-i mirror/http/mirror select deb.debian.org
+d-i mirror/http/hostname string {{ debian_preseed_mirror if debian_preseed_mirror else 'deb.debian.org' }}
 d-i mirror/http/directory string /debian
 d-i mirror/http/proxy string
 
@@ -167,7 +168,7 @@ one ::                                                          \
 
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
-  DISK1="$(list-devices disk | head -1 )" ; \
+  DISK1="{{ '$(list-devices disk | grep '+debian_preseed_disk+' | head -1 )' if debian_preseed_disk else '$(list-devices disk | head -1 )' }}" ; \
   debconf-set grub-installer/bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1}" ;
 
@@ -180,7 +181,7 @@ d-i preseed/late_command string sed -i 's/PermitRootLogin .*/PermitRootLogin Yes
   mkdir /target/root/.ssh; \
   wget -O /target/root/.ssh/authorized_keys {{ url if debian_sshkey is url else 'https://github.com/sergelogvinov.keys' }}; \
   chmod 0600 /target/root/.ssh/authorized_keys; \
-  lvremove -f /dev/{{debian_preseed_vgname}}/keep ; \
+  lvremove -f /dev/{{debian_preseed_vgname}}/keep; {% if debian_rebuild_initrd %}cp /network.sh /target/root/network.sh;{% endif %} \
   wget -O /target/root/proxmox-playbook.yaml https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/bookworm/proxmox-playbook.yaml; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-system.git,main; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-iptables.git,main; \

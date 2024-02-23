@@ -1,5 +1,6 @@
-- hosts: all
+- hosts: localhost
   vars:
+    server_hostname: "{{ ansible_hostname }}"
     system_packages:
       - tcpdump
       - htop

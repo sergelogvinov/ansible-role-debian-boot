@@ -64,12 +64,19 @@
 - import_tasks: bond.yml
   when: debian_rebuild_initrd
 
-- name: Save interface config
-  fetch:
-    src: /etc/network/interfaces
-    dest: facts/interfaces-{{ inventory_hostname }}
-    fail_on_missing: no
-    flat: yes
+- block:
+    - name: Save interfaces config
+      fetch:
+        src: /etc/network/interfaces
+        dest: facts/interfaces-{{ inventory_hostname }}
+        fail_on_missing: no
+        flat: yes
+    - name: Save interfaces.d config
+      synchronize:
+        src: /etc/network/interfaces.d
+        dest: facts/interfaces-{{ inventory_hostname }}.d
+        mode: pull
+        verify_host: false
 
 - meta: flush_handlers
 
