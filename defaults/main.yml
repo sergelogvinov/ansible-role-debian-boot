@@ -13,6 +13,11 @@ debian_cmdline_addon: ""
 
 debian_preseed: "proxmox.cfg"
 # debian_preseed: "https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox.cfg"
+
+debian_preseed_password: 123123
+debian_preseed_vgname: data
+debian_preseed_mirror: mirror.nl.datapacket.com
+
 debian_sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDd+wfWIKi1dDZuCsd/zNw2n4WuHHa21N/Ltmo3umH2d" # "https://github.com/sergelogvinov.keys"
 
 debian_grub: false

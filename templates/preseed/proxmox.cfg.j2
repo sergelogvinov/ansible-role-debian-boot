@@ -1,0 +1,194 @@
+#
+popularity-contest popularity-contest/participate boolean false
+
+d-i hw-detect/load_firmware boolean true
+
+# Verbose output and no boot splash screen.
+d-i debian-installer/quiet  boolean false
+d-i debian-installer/splash boolean false
+d-i debian-installer/probe/usb boolean false
+
+# Locale, country and keyboard settings.
+d-i debian-installer/language string en
+d-i debian-installer/country string US
+d-i debian-installer/locale string en_US.UTF-8
+d-i localechooser/languagelist select en
+d-i localechooser/supported-locales multiselect en_US.UTF-8 UTF-8
+
+d-i console-setup/ask_detect boolean false
+d-i console-setup/modelcode string pc105
+d-i console-setup/variant USA
+d-i console-setup/layout USA
+d-i console-setup/layoutcode string us
+; d-i network-console/password password {{debian_preseed_password}}
+; d-i network-console/password-again password {{debian_preseed_password}}
+d-i network-console/authorized_keys_url string https://github.com/sergelogvinov.keys
+d-i network-console/login select Start installer
+
+d-i debian-installer/add-kernel-opts string transparent_hugepage=never default_hugepagesz=1G hugepagesz=1G
+
+d-i finish-install/reboot_in_progress note
+d-i clock-setup/utc boolean true
+d-i clock-setup/ntp boolean true
+d-i clock-setup/ntp-server string 2.debian.pool.ntp.org
+d-i keymap select en
+d-i time/zone string Etc/UTC
+
+# Mirror
+d-i mirror/country string manual
+d-i mirror/http/hostname string {{debian_preseed_mirror}}
+d-i mirror/http/directory string /debian
+d-i mirror/http/proxy string
+
+d-i apt-setup/security-updates boolean true
+d-i apt-setup/restricted boolean false
+d-i apt-setup/universe boolean flase
+d-i apt-setup/multiverse boolean false
+d-i apt-setup/non-free boolean false
+d-i apt-setup/use_mirror boolean true
+d-i apt-setup/disable-cdrom-entries boolean true
+d-i apt-setup/cdrom/set-first boolean false
+d-i apt-setup/cdrom/set-next boolean false
+d-i apt-setup/cdrom/set-failed boolean false
+
+d-i apt-setup/local0/repository string http://download.proxmox.com/debian/pve bookworm pve-no-subscription
+d-i apt-setup/local0/key string http://download.proxmox.com/debian/proxmox-release-bookworm.gpg
+
+#
+d-i passwd/shadow boolean true
+d-i passwd/make-user boolean false
+d-i passwd/root-login boolean true
+d-i passwd/root-password password {{debian_preseed_password}}
+d-i passwd/root-password-again password {{debian_preseed_password}}
+# d-i passwd/root-password-crypted password $1$SrmylaLD$M66zQyLDr7QeEwewvpdns/
+d-i passwd/allow-password-weak boolean true
+d-i user-setup/allow-password-weak boolean true
+
+locales locales/locales_to_be_generated         multiselect     en_US.UTF-8 UTF-8
+locales locales/default_environment_locale      select          en_US.UTF-8
+
+tasksel tasksel/first multiselect standard, ssh-server
+d-i tasksel/first multiselect standard, ssh-server
+d-i pkgsel/include string openssh-server proxmox-kernel-6.2 git ansible bridge-utils
+d-i pkgsel/updatedb boolean true
+d-i pkgsel/update-policy select Install security updates automatically
+d-i base-installer/install-recommends boolean false
+
+# Network
+# file /etc/network/interfaces will handle by ansible
+d-i netcfg/target_network_config select none
+d-i netcfg/link_wait_timeout string 15
+d-i netcfg/dhcp_timeout string 10
+d-i netcfg/dhcpv6_timeout string 10
+
+# Partitioning
+d-i user-setup/encrypt-home boolean false
+d-i partman/choose_partition select finish
+
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+
+d-i partman-auto/choose_recipe select raid1
+d-i partman-auto/method string raid
+
+d-i partman-basicmethods/method_only boolean false
+d-i partman-basicfilesystems/no_swap boolean false
+
+d-i partman-auto-lvm/guided_size string max
+d-i partman-auto-lvm/no_boot boolean true
+d-i partman-auto-lvm/new_vg_name string {{ debian_preseed_vgname }}
+d-i partman-auto-lvm/new_vg_name_exists string {{ debian_preseed_vgname }}
+
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+
+d-i partman-md/device_remove_md boolean true
+d-i partman-md/confirm boolean true
+d-i partman-md/confirm_nooverwrite boolean true
+
+d-i partman-partitioning/confirm_write_new_label boolean true
+d-i partman-basicfilesystems/no_mount_point boolean false
+d-i partman-basicfilesystems/choose_label string gpt
+d-i partman-basicfilesystems/default_label string gpt
+d-i partman-partitioning/choose_label select gpt
+d-i partman-partitioning/default_label string gpt
+d-i partman/choose_label string gpt
+d-i partman/default_label string gpt
+
+d-i partman-auto/expert_recipe string                           \
+raid1 ::                                                        \
+  1 1 1 free                                                    \
+     $bios_boot{ }                                              \
+     method{ biosgrub }                                         \
+  .                                                             \
+  538 538 1075 vfat                                             \
+     $primary{ }                                                \
+     $iflabel{ gpt }                                            \
+     $reusemethod{ }                                            \
+     method{ efi } format{ }                                    \
+     mountpoint{ /boot/efi }                                    \
+  .                                                             \
+  512 1024 1024 raid                                            \
+     $lvmignore{ } $primary{ } method{ raid }                   \
+     $bootable{ }                                               \
+  .                                                             \
+  1024 1024 4096 linux-swap                                     \
+     $lvmignore{ } $primary{ } method{ swap }                   \
+     format{ }                                                  \
+  .                                                             \
+  4096 4096 -1 raid                                             \
+     $lvmignore{ } $primary{ } method{ raid }                   \
+  .                                                             \
+  20480 4096 32768 xfs                                          \
+     $defaultignore{ } $lvmok{ } in_vg{ {{debian_preseed_vgname}} }                  \
+     method{ format } format{ } use_filesystem{ }               \
+     filesystem{ xfs } options/relatime{ relatime }             \
+     mountpoint{ / } lv_name{ root } label{ root }              \
+  .                                                             \
+  4096 4096 4096 xfs                                            \
+     $defaultignore{ } $lvmok{ } in_vg{ {{debian_preseed_vgname}} }                  \
+     method{ format } format{ } use_filesystem{ }               \
+     filesystem{ xfs }                                          \
+     options/nodev{ nodev }                                     \
+     options/nosuid{ nosuid } options/noexec{ noexec }          \
+     mountpoint{ /var/lib/vz } lv_name{ vz } label{ vz }        \
+  .                                                             \
+  1 4096 -1 xfs                                                 \
+     $defaultignore{ } $lvmok{ } in_vg{ {{debian_preseed_vgname}} }                  \
+     method{ keep } lv_name{ keep }                             \
+  .
+
+d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
+d-i partman/early_command string \
+  DISK1="$(list-devices disk | head -1 )" ; \
+  DISK2="$(list-devices disk | head -2 | tail -1)" ; \
+  PART1="$(echo $DISK1 | sed '/nvme/s/$/p/' )" ; \
+  PART2="$(echo $DISK2 | sed '/nvme/s/$/p/' )" ; \
+  if [ "${DISK1}" = "${DISK2}" ]; then \
+  debconf-set grub-installer/bootdev "${DISK1}" ; \
+  debconf-set partman-auto/disk "${DISK1}" ; \
+  debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3 . 1 2 0 lvm - ${PART1}5 ." ; \
+  else \
+  debconf-set grub-installer/bootdev "${DISK1} ${DISK2}" ; \
+  debconf-set grub-installer/choose_bootdev "${DISK1} ${DISK2}" ; \
+  debconf-set partman-auto/disk "${DISK1} ${DISK2}" ; \
+  debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3#${PART2}3 . 1 2 0 lvm - ${PART1}5#${PART2}5 ." ; \
+  fi ;
+
+d-i partman-efi/non_efi_system boolean true
+d-i grub2/force_efi_extra_removable boolean true
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean true
+
+d-i preseed/late_command string sed -i 's/PermitRootLogin .*/PermitRootLogin Yes/g' /target/etc/ssh/sshd_config; echo 'PermitRootLogin Yes' >>/target/etc/ssh/sshd_config; \
+  mkdir /target/root/.ssh; \
+  wget -O /target/root/.ssh/authorized_keys {{ url if debian_sshkey is url else 'https://github.com/sergelogvinov.keys' }}; \
+  chmod 0600 /target/root/.ssh/authorized_keys; \
+  lvremove -f /dev/{{debian_preseed_vgname}}/keep ; \
+  wget -O /target/root/proxmox-playbook.yaml https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/bookworm/proxmox-playbook.yaml; \
+  in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-system.git,main; \
+  in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-iptables.git,main; \
+  in-target mkdir /dev/shm; \
+  in-target ansible-playbook --connection=local /root/proxmox-playbook.yaml; \
+  rm -rf /target/.ansible /target/root/proxmox-playbook.yaml;

@@ -58,6 +58,9 @@
 - import_tasks: sshd.yml
   when: debian_rebuild_initrd
 
+- import_tasks: preseed.yml
+  when: debian_rebuild_initrd
+
 - import_tasks: bond.yml
   when: debian_rebuild_initrd
 
