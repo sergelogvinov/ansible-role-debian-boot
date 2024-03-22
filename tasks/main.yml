@@ -76,6 +76,8 @@
 - import_tasks: bond.yml
   when: debian_rebuild_initrd
 
+- meta: flush_handlers
+
 - block:
     - name: Save interfaces config
       fetch:
@@ -89,8 +91,6 @@
         dest: facts/interfaces-{{ inventory_hostname }}.d
         mode: pull
         verify_host: false
-
-- meta: flush_handlers
 
 - name: packages (debian)
   become: yes
