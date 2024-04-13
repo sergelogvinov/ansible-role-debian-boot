@@ -4,7 +4,7 @@ echo "options timeout:5 attempts:3" > /etc/resolv.conf
 {% if not '1.1.1.1' in ansible_dns.nameservers %}
 echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 {% endif %}
-{% for ns in ansible_dns.nameservers[:2] %}
+{% for ns in ansible_dns.nameservers[:2] if not ns.startswith('127.0') %}
 echo "nameserver {{ ns }}" >> /etc/resolv.conf
 {% endfor %}
 cp /etc/resolv.conf /etc/resolv.conf.debian
