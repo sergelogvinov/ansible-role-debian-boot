@@ -91,6 +91,7 @@
         dest: facts/interfaces-{{ inventory_hostname }}.d
         mode: pull
         verify_host: false
+      ignore_errors: yes
 
 - name: packages (debian)
   become: yes
