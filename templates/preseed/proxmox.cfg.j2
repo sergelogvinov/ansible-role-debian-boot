@@ -126,7 +126,6 @@ raid1 ::                                                        \
   538 538 1075 vfat                                             \
      $primary{ }                                                \
      $iflabel{ gpt }                                            \
-     $reusemethod{ }                                            \
      method{ efi } format{ }                                    \
      mountpoint{ /boot/efi }                                    \
   .                                                             \
@@ -171,8 +170,8 @@ d-i partman/early_command string \
   debconf-set partman-auto/disk "${DISK1}" ; \
   debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3 . 1 2 0 lvm - ${PART1}5 ." ; \
   else \
-  debconf-set grub-installer/bootdev "${DISK1} ${DISK2}" ; \
-  debconf-set grub-installer/choose_bootdev "${DISK1} ${DISK2}" ; \
+  debconf-set grub-installer/bootdev "${DISK1}" ; \
+  debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1} ${DISK2}" ; \
   debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3#${PART2}3 . 1 2 0 lvm - ${PART1}5#${PART2}5 ." ; \
   fi ;
