@@ -3,6 +3,7 @@
 # This file for manual configuration of network interfaces
 # It is not used by default
 #
+set -x
 
 {% set bonds = [] %}
 {% for interface in ansible_interfaces|sort %}

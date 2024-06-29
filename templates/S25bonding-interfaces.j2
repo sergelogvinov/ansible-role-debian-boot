@@ -1,4 +1,5 @@
 #!/bin/sh
+set -x
 
 echo "options timeout:5 attempts:3" > /etc/resolv.conf
 {% if not '1.1.1.1' in ansible_dns.nameservers %}
@@ -20,6 +21,8 @@ cp /etc/resolv.conf /etc/resolv.conf.debian
 modprobe bonding
 {% endif %}
 
+sleep 5
+
 {% set slaves = [] %}
 {% set inx = namespace(value=0) %}
 {% for interface in bonds|sort %}
@@ -39,9 +42,9 @@ echo "{{ iface.lacp_rate | default('fast') }}" > /sys/class/net/bond{{ inx.value
 echo "1" > /sys/class/net/bond{{ inx.value }}/bonding/min_links ||:
 
 {% for slave in iface.slaves %}{{ slaves.append(slave) }}
-ip link set {{ slave }} down
+ip link set {{ slave }} down ||:
 echo "+{{ slave }}" > /sys/class/net/bond{{ inx.value }}/bonding/slaves ||:
-ip link set {{ slave }} up
+ip link set {{ slave }} up ||:
 {% endfor %}
 
 {% if iface.ipv4.address is defined %}
