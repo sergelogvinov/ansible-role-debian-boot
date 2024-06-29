@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.2.1...v0.2.2) (2024-06-29)
+
+
+### Bug Fixes
+
+* more debug info ([017dfc6](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/017dfc6ca36afca873cc19d4dd6b41597695592c))
+* partition drop reusemethod ([c98234a](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/c98234a079c57af0dda860555d8364f93d25984b))
+
 ## [0.2.1](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.2.0...v0.2.1) (2024-04-13)
 
 
