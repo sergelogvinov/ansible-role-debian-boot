@@ -1,5 +1,9 @@
 {% if debian_sshkey is url %}{% for key in lookup('ansible.builtin.url', debian_sshkey, wantlist=True) %}
 {{ key }}
-{% endfor %}{% else %}
+{% endfor %}{% elif debian_sshkey is string %}
 {{ debian_sshkey }}
+{% else %}
+{% for k in debian_sshkey|sort %}
+{{ k }}
+{% endfor %}
 {% endif %}
