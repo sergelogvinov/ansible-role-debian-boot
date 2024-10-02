@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.3.0...v0.3.1) (2024-10-02)
+
+
+### Bug Fixes
+
+* typo ([14dfbfb](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/14dfbfbb5f2506ba41d2c2df31294a763a376b45))
+
 ## [0.3.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.2.1...v0.3.0) (2024-10-02)
 
 
