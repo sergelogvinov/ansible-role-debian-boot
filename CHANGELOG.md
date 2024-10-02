@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.2.1...v0.3.0) (2024-10-02)
+
+
+### Features
+
+* disk-path method ([03a4844](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/03a4844a9097a0b9c9c17d4a4da6fa123309e6f4))
+
+
+### Bug Fixes
+
+* galaxy metadata ([26a15ae](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/26a15aeca3bf06035e58c791d061eb78633cbc88))
+* more debug info ([017dfc6](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/017dfc6ca36afca873cc19d4dd6b41597695592c))
+* partition drop reusemethod ([c98234a](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/c98234a079c57af0dda860555d8364f93d25984b))
+
 ## [0.2.1](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.2.0...v0.2.1) (2024-04-13)
 
 
