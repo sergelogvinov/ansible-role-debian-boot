@@ -1,6 +1,5 @@
-
 - name: Copy preseed from local
-  become: yes
+  become: true
   template:
     src: "preseed/{{ debian_preseed }}.j2"
     dest: "/boot/preseed/debian-preseed.cfg"
@@ -9,7 +8,7 @@
   notify: Repack-initrd
 
 - name: Copy preseed from url
-  become: yes
+  become: true
   get_url:
     url: "{{ debian_preseed }}"
     dest: "/boot/preseed/debian-preseed.cfg"

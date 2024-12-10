@@ -13,19 +13,26 @@
     file: default.yml
 
 - name: packages (debian)
-  become: yes
+  become: true
+  ignore_errors: true
   apt:
-    name: 'rsync'
+    name: "{{ item }}"
+    update_cache: true
+    cache_valid_time: 3600
   when: ansible_os_family == "Debian"
+  with_items:
+    - rsync
+    - cpio
 
 - name: packages (centos)
-  become: yes
+  become: true
+  ignore_errors: true
   yum:
     name: 'rsync'
   when: ansible_os_family == "RedHat"
 
 - name: Get debian kernel
-  become: yes
+  become: true
   get_url:
     url: "{{ item.url }}"
     dest: "/boot/{{ item.name }}"
@@ -35,7 +42,7 @@
     - { url: "{{ debian_initrd }}", checksum: "{{ debian_initrd_sha }}", name: debian-initrd.gz  }
 
 - name: Add grub menu (debian)
-  become: yes
+  become: true
   template:
     src: grub/debian.j2
     dest: /etc/grub.d/15_debian_installer
@@ -44,7 +51,7 @@
   notify: Update-grub
 
 - name: Add grub menu (redhat)
-  become: yes
+  become: true
   template:
     src: grub/centos.j2
     dest: /etc/grub.d/15_debian_installer
@@ -53,7 +60,7 @@
   notify: Update-grub
 
 - name: Prepare directory
-  become: yes
+  become: true
   file:
     path: "{{ item }}"
     state: directory
@@ -84,23 +91,25 @@
         src: /etc/network/interfaces
         dest: facts/interfaces-{{ inventory_hostname }}
         fail_on_missing: no
-        flat: yes
+        flat: true
     - name: Save interfaces.d config
       synchronize:
         src: /etc/network/interfaces.d
         dest: facts/interfaces-{{ inventory_hostname }}.d
         mode: pull
         verify_host: false
-      ignore_errors: yes
+      ignore_errors: true
 
 - name: packages (debian)
-  become: yes
+  become: true
   apt:
     name: 'kexec-tools'
+    update_cache: true
+    cache_valid_time: 3600
   when: debian_kexec and ansible_os_family == "Debian"
 
 - name: packages (centos)
-  become: yes
+  become: true
   yum:
     name: 'kexec-tools'
   when: debian_kexec and ansible_os_family == "RedHat"
@@ -109,11 +118,11 @@
   when: debian_kexec
   block:
     - name: Run sync
-      become: yes
+      become: true
       command: "sync"
 
     - name: Run kexec
-      become: yes
+      become: true
       command: "kexec {{ item }}"
       timeout: 30
       register: result

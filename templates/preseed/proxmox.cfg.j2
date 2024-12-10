@@ -78,9 +78,9 @@ d-i base-installer/install-recommends boolean false
 # Network
 # file /etc/network/interfaces will handle by ansible
 d-i netcfg/target_network_config select none
-d-i netcfg/link_wait_timeout string 15
-d-i netcfg/dhcp_timeout string 10
-d-i netcfg/dhcpv6_timeout string 10
+d-i netcfg/link_wait_timeout string 30
+d-i netcfg/dhcp_timeout string 15
+d-i netcfg/dhcpv6_timeout string 15
 
 # Partitioning
 d-i user-setup/encrypt-home boolean false

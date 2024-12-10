@@ -1,6 +1,5 @@
-
 - name: Repack-initrd
-  become: yes
+  become: true
   block:
     - name: Prepend initrd
       shell:

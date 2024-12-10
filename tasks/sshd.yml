@@ -1,6 +1,6 @@
 
 - name: Prepare directory
-  become: yes
+  become: true
   file:
     path: "{{ item }}"
     state: directory
@@ -13,11 +13,11 @@
     - /boot/preseed/lib/debian-installer.d
 
 - name: Copy sshd files
-  become: yes
+  become: true
   copy:
     src: "/etc/ssh/{{ item }}"
     dest: "/boot/preseed/etc/ssh/{{ item }}"
-    remote_src: yes
+    remote_src: true
     mode: 0600
   with_items:
     - ssh_host_ecdsa_key
@@ -29,7 +29,7 @@
   notify: Repack-initrd
 
 - name: Sshd config
-  become: yes
+  become: true
   template:
     src: "{{ item.name }}.j2"
     dest: "{{ item.path }}/{{ item.name }}"
