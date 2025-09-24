@@ -105,7 +105,7 @@
   apt:
     name: 'kexec-tools'
     update_cache: true
-    cache_valid_time: 3600
+    cache_valid_time: 60
   when: debian_kexec and ansible_os_family == "Debian"
 
 - name: packages (centos)
