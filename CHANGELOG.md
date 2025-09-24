@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.3.1...v0.3.2) (2025-09-24)
+
+
+### Bug Fixes
+
+* interface selection ([e1e6c86](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/e1e6c8696128204d5a4b5a91d28728ec305c47e9))
+
 ## [0.3.1](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.3.0...v0.3.1) (2024-10-27)
 
 
