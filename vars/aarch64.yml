@@ -1,5 +1,5 @@
 
-debian_kernel: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/current/images/netboot/debian-installer/arm64/linux"
+debian_kernel: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/{{ debian_release }}/images/netboot/debian-installer/arm64/linux"
 debian_kernel_sha: sha256:fb7295d8a42f7c6e0768eb56c97fd89194c74c98e86b3265f819c7905606d825
-debian_initrd: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz"
+debian_initrd: "https://deb.debian.org/debian/dists/{{ debian_version }}/main/installer-arm64/{{ debian_release }}/images/netboot/debian-installer/arm64/initrd.gz"
 debian_initrd_sha: sha256:6abe82d0640eb9f4c21c45eedc12eec5ecc5b0caef4db7c49f875b57031c35b8

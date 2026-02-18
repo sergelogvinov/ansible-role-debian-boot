@@ -1,0 +1,24 @@
+- hosts: localhost
+  vars:
+    server_hostname: "{{ ansible_facts['hostname'] }}"
+    system_packages:
+      - tcpdump
+      - htop
+      - iftop
+    system_sshd_acceptenv: LC_PVE_TICKET
+    system_sshd_tcpforward: true
+    system_sysctl:
+      - { name: net.ipv4.ip_forward,          value: 1 }
+      - { name: net.ipv6.conf.all.forwarding, value: 1 }
+    system_network: true
+    system_network_interface: interfaces-proxmox.j2
+    system_network_hosts:
+      - { ip: "{{ ansible_facts['default_ipv4']['address'] }}",    name: "{{ ansible_facts['hostname'] }}" }
+
+    iptables_apply_changes: false
+    iptables_ipset_enabled: false
+    iptables_configuration_template: iptables_proxmox.j2
+    iptables6_configuration_template: iptables6_proxmox.j2
+  roles:
+    - ansible-role-system
+    - ansible-role-iptables

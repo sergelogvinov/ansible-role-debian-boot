@@ -1,5 +1,6 @@
 
-debian_version: bookworm
+debian_version: trixie
+debian_release: current
 
 debian_console: ""
 debian_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
