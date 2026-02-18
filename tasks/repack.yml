@@ -14,5 +14,5 @@
 
     - name: Compress initrd
       shell:
-        cmd: rm -f debian-initrd-preseed.gz && gzip -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
+        cmd: rm -f debian-initrd-preseed.gz && gzip -n --best -c debian-initrd-preseed > /boot/debian-initrd-preseed.gz && rm -f debian-initrd-preseed
         chdir: /boot
