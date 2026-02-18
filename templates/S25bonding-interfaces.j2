@@ -2,16 +2,16 @@
 set -x
 
 echo "options timeout:5 attempts:3" > /etc/resolv.conf
-{% if not '1.1.1.1' in ansible_dns.nameservers %}
+{% if not '1.1.1.1' in ansible_facts['dns']['nameservers'] %}
 echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 {% endif %}
-{% for ns in ansible_dns.nameservers[:2] if not ns.startswith('127.0') %}
+{% for ns in ansible_facts['dns']['nameservers'][:2] if not ns.startswith('127.0') %}
 echo "nameserver {{ ns }}" >> /etc/resolv.conf
 {% endfor %}
 cp /etc/resolv.conf /etc/resolv.conf.debian
 
 {% set bonds = [] %}
-{% for interface in ansible_interfaces|sort %}
+{% for interface in ansible_facts['interfaces']|sort %}
 {% set iface = ansible_facts[interface] %}
 {% if iface.type is defined and iface.type == "bonding" and (iface.slaves|length > 0) %}{{ bonds.append(interface) }}
 {% endif %}
@@ -56,22 +56,22 @@ ip link set bond{{ inx.value }} up
 {% endfor %}
 
 logger -t debian-boot "INFO: set default route on {{ debian_interface }}"
-{% if ansible_default_ipv4.gateway is defined %}
-{% set cidrv4 = ansible_default_ipv4['address'] + '/' + ansible_default_ipv4['prefix'] %}
-{% if not (ansible_default_ipv4['gateway'] | ansible.utils.ipaddr(cidrv4)) %}
-route add {{ ansible_default_ipv4['gateway'] }}/32 dev {{ debian_interface }} link metric 2048 ||:
+{% if ansible_facts['default_ipv4']['gateway'] is defined %}
+{% set cidrv4 = ansible_facts['default_ipv4']['address'] + '/' + ansible_facts['default_ipv4']['prefix'] %}
+{% if not (ansible_facts['default_ipv4']['gateway'] | ansible.utils.ipaddr(cidrv4)) %}
+route add {{ ansible_facts['default_ipv4']['gateway'] }}/32 dev {{ debian_interface }} link metric 2048 ||:
 {% endif %}
-ip route add default via {{ ansible_default_ipv4.gateway }} dev {{ debian_interface }} metric 2048 ||:
+ip route add default via {{ ansible_facts['default_ipv4']['gateway'] }} dev {{ debian_interface }} metric 2048 ||:
 {% endif %}
-{% if ansible_default_ipv6.address is defined and ansible_default_ipv6.address[:4] != 'fe80' %}
-ip -6 route add default via {{ ansible_default_ipv6.gateway }} dev {{ debian_interface }} metric 2048 ||:
+{% if ansible_facts['default_ipv6']['address'] is defined and ansible_facts['default_ipv6']['address'][:4] != 'fe80' %}
+ip -6 route add default via {{ ansible_facts['default_ipv6']['gateway'] }} dev {{ debian_interface }} metric 2048 ||:
 {% endif %}
 
 sleep 5
-{% if ansible_default_ipv4.gateway is defined %}
+{% if ansible_facts['default_ipv4']['gateway'] is defined %}
 ping -c 4 1.1.1.1 >/dev/null || logger -t debian-boot "INFO: global network ipv4 is unreachable"
 {% endif %}
-{% if ansible_default_ipv6.gateway is defined %}
+{% if ansible_facts['default_ipv6']['gateway'] is defined %}
 ping -6 -c 4 2606:4700:4700::1111 >/dev/null || logger -t debian-boot "INFO: global network ipv6 is unreachable"
 {% endif %}
 logger -t debian-boot "INFO: network init done"

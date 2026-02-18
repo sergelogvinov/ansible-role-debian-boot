@@ -1,6 +1,6 @@
 
 - name: Bonding helpers
-  become: yes
+  become: true
   template:
     src: "{{ item.name }}.j2"
     dest: "{{ item.path }}/{{ item.name }}"

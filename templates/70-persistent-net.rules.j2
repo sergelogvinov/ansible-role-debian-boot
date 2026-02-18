@@ -1,4 +1,4 @@
-{% for interface in ansible_interfaces|sort %}{% set iface = ansible_facts[interface] %}
+{% for interface in ansible_facts['interfaces']|sort %}{% set iface = ansible_facts[interface] %}
 {% if iface.type is defined and iface.type == "ether" and
     iface.module is defined and (not iface.module in ['cdc_ether']) and
     (not interface.startswith('cali')) %}

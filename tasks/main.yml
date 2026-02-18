@@ -1,12 +1,12 @@
 
 - include_vars: "{{ item }}"
   with_first_found:
-    - "../vars/{{ ansible_os_family }}.yml"
+    - "../vars/{{ ansible_facts['os_family'] }}.yml"
     - "../vars/empty.yml"
 
 - include_vars: "{{ item }}"
   with_first_found:
-    - "../vars/{{ ansible_architecture }}.yml"
+    - "../vars/{{ ansible_facts['architecture'] }}.yml"
     - "../vars/empty.yml"
 
 - include_vars:
@@ -19,7 +19,7 @@
     name: "{{ item }}"
     update_cache: true
     cache_valid_time: 3600
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
   with_items:
     - rsync
     - cpio
@@ -29,14 +29,15 @@
   ignore_errors: true
   yum:
     name: 'rsync'
-  when: ansible_os_family == "RedHat"
+  when: ansible_facts['os_family'] == "RedHat"
 
 - name: Get debian kernel
   become: true
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ item.url }}"
     dest: "/boot/{{ item.name }}"
     checksum: ""
+    force: true
   with_items:
     - { url: "{{ debian_kernel }}", checksum: "{{ debian_kernel_sha }}", name: debian-kernel     }
     - { url: "{{ debian_initrd }}", checksum: "{{ debian_initrd_sha }}", name: debian-initrd.gz  }
@@ -47,7 +48,7 @@
     src: grub/debian.j2
     dest: /etc/grub.d/15_debian_installer
     mode: 0755
-  when: debian_grub and ansible_os_family == "Debian"
+  when: debian_grub and ansible_facts['os_family'] == "Debian"
   notify: Update-grub
 
 - name: Add grub menu (redhat)
@@ -56,7 +57,7 @@
     src: grub/centos.j2
     dest: /etc/grub.d/15_debian_installer
     mode: 0755
-  when: debian_grub and ansible_os_family == "RedHat"
+  when: debian_grub and ansible_facts['os_family'] == "RedHat"
   notify: Update-grub
 
 - name: Prepare directory
@@ -106,13 +107,13 @@
     name: 'kexec-tools'
     update_cache: true
     cache_valid_time: 60
-  when: debian_kexec and ansible_os_family == "Debian"
+  when: debian_kexec and ansible_facts['os_family'] == "Debian"
 
 - name: packages (centos)
   become: true
   yum:
     name: 'kexec-tools'
-  when: debian_kexec and ansible_os_family == "RedHat"
+  when: debian_kexec and ansible_facts['os_family'] == "RedHat"
 
 - name: Run debian installer
   when: debian_kexec
@@ -134,5 +135,5 @@
   rescue:
     - name: check server
       connection: local
-      command: "ping -c 10 {{ ansible_default_ipv4['address'] }}"
+      command: "ping -c 10 {{ ansible_facts['default_ipv4']['address'] }}"
       when: debian_kexec

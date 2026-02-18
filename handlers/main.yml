@@ -2,7 +2,7 @@
 
 - name: Update-grub
   shell: "{{ update_grub_cmd }}"
-  become: yes
+  become: true
 
 - name: Repack-initrd
   include_tasks: tasks/repack.yml
