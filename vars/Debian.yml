@@ -1,3 +1,5 @@
 ---
 
 update_grub_cmd: /usr/sbin/update-grub
+
+debian_installer_path: /usr/lib/debian-installer.d

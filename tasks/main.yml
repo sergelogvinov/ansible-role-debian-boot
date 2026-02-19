@@ -15,7 +15,7 @@
 - name: packages (debian)
   become: true
   ignore_errors: true
-  apt:
+  ansible.builtin.apt:
     name: "{{ item }}"
     update_cache: true
     cache_valid_time: 3600
@@ -28,8 +28,11 @@
   become: true
   ignore_errors: true
   yum:
-    name: 'rsync'
+    name: "{{ item }}"
   when: ansible_facts['os_family'] == "RedHat"
+  with_items:
+    - rsync
+    - cpio
 
 - name: Get debian kernel
   become: true
@@ -72,7 +75,7 @@
   with_items:
     - /boot/preseed
     - /boot/preseed/etc/udev/rules.d
-    - /boot/preseed/lib/debian-installer.d
+    - "/boot/preseed{{ debian_installer_path }}"
     - /boot/preseed/usr/bin
 
 - import_tasks: sshd.yml
@@ -103,7 +106,7 @@
 
 - name: packages (debian)
   become: true
-  apt:
+  ansible.builtin.apt:
     name: 'kexec-tools'
     update_cache: true
     cache_valid_time: 60
@@ -111,7 +114,7 @@
 
 - name: packages (centos)
   become: true
-  yum:
+  ansible.builtin.yum:
     name: 'kexec-tools'
   when: debian_kexec and ansible_facts['os_family'] == "RedHat"
 

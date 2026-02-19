@@ -27,7 +27,7 @@ debian_preseed_disk_path: ~
 #     udevadm info /dev/sdc | grep /devices
 # debian_preseed_disk_path: /sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/host0/target0:0:8/0:0:8:0/block/
 
-debian_preseed_mirror: ~ # mirror.nl.datapacket.com
+debian_preseed_mirror: ~ # ftp.nl.debian.org
 
 debian_sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDd+wfWIKi1dDZuCsd/zNw2n4WuHHa21N/Ltmo3umH2d" # "https://github.com/sergelogvinov.keys"
 

@@ -10,7 +10,7 @@
   with_items:
     - /boot/preseed
     - /boot/preseed/etc/ssh
-    - /boot/preseed/lib/debian-installer.d
+    - "/boot/preseed{{ debian_installer_path }}"
 
 - name: Copy sshd files
   become: true
@@ -37,5 +37,5 @@
   with_items:
     - { name: sshd_config,      mode: "0644", path: /boot/preseed/etc/ssh }
     - { name: authorized_keys,  mode: "0644", path: /boot/preseed/etc/ssh }
-    - { name: S60sshd,          mode: "0755", path: /boot/preseed/lib/debian-installer.d }
+    - { name: S60sshd,          mode: "0755", path: /boot/preseed/usr/lib/debian-installer.d }
   notify: Repack-initrd

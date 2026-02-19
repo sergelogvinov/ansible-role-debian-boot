@@ -8,6 +8,6 @@
   with_items:
     - { name: network.sh,               path: /boot/preseed }
     - { name: 70-persistent-net.rules,  path: /boot/preseed/etc/udev/rules.d }
-    - { name: S25bonding-interfaces,    path: /boot/preseed/lib/debian-installer.d }
+    - { name: S25bonding-interfaces,    path: "/boot/preseed{{ debian_installer_path }}" }
     - { name: if-keep-up.sh,            path: /boot/preseed/usr/bin }
   notify: Repack-initrd
