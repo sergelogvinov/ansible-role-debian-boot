@@ -1,20 +1,20 @@
 
 - name: Prepare directory
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: root
     group: root
     mode: 0755
   with_items:
-    - /boot/preseed
-    - /boot/preseed/etc/ssh
+    - "/boot/preseed"
+    - "/boot/preseed/etc/ssh"
     - "/boot/preseed{{ debian_installer_path }}"
 
 - name: Copy sshd files
   become: true
-  copy:
+  ansible.builtin.copy:
     src: "/etc/ssh/{{ item }}"
     dest: "/boot/preseed/etc/ssh/{{ item }}"
     remote_src: true
@@ -30,7 +30,7 @@
 
 - name: Sshd config
   become: true
-  template:
+  ansible.builtin.template:
     src: "{{ item.name }}.j2"
     dest: "{{ item.path }}/{{ item.name }}"
     mode: "{{ item.mode }}"

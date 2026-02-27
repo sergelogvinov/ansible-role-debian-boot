@@ -9,8 +9,10 @@
     - "../vars/{{ ansible_facts['architecture'] }}.yml"
     - "../vars/empty.yml"
 
-- include_vars:
-    file: default.yml
+- include_vars: "{{ item }}"
+  with_first_found:
+    - "../vars/{{ debian_version }}.yml"
+    - "../vars/empty.yml"
 
 - name: packages (debian)
   become: true
@@ -73,10 +75,10 @@
     mode: 0755
   when: debian_rebuild_initrd
   with_items:
-    - /boot/preseed
-    - /boot/preseed/etc/udev/rules.d
+    - "/boot/preseed"
+    - "/boot/preseed/etc/udev/rules.d"
     - "/boot/preseed{{ debian_installer_path }}"
-    - /boot/preseed/usr/bin
+    - "/boot/preseed/usr/bin"
 
 - import_tasks: sshd.yml
   when: debian_rebuild_initrd
@@ -91,15 +93,15 @@
 
 - block:
     - name: Save interfaces config
-      fetch:
+      ansible.builtin.fetch:
         src: /etc/network/interfaces
-        dest: facts/interfaces-{{ inventory_hostname }}
+        dest: "facts/interfaces-{{ inventory_hostname }}"
         fail_on_missing: no
         flat: true
     - name: Save interfaces.d config
-      synchronize:
+      ansible.builtin.synchronize:
         src: /etc/network/interfaces.d
-        dest: facts/interfaces-{{ inventory_hostname }}.d
+        dest: "facts/interfaces-{{ inventory_hostname }}.d"
         mode: pull
         verify_host: false
       ignore_errors: true

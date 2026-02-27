@@ -52,7 +52,7 @@ d-i apt-setup/cdrom/set-first boolean false
 d-i apt-setup/cdrom/set-next boolean false
 d-i apt-setup/cdrom/set-failed boolean false
 
-d-i apt-setup/local0/repository string http://download.proxmox.com/debian/pve bookworm pve-no-subscription
+d-i apt-setup/local0/repository string http://download.proxmox.com/debian/pve {{ debian_version }} pve-no-subscription
 d-i apt-setup/local0/key string http://download.proxmox.com/debian/proxmox-release-bookworm.gpg
 
 #
@@ -70,7 +70,7 @@ locales locales/default_environment_locale      select          en_US.UTF-8
 
 tasksel tasksel/first multiselect standard, ssh-server
 d-i tasksel/first multiselect standard, ssh-server
-d-i pkgsel/include string openssh-server proxmox-kernel-6.2 git ansible bridge-utils
+d-i pkgsel/include string {{ debian_preseed_packages }}
 d-i pkgsel/updatedb boolean true
 d-i pkgsel/update-policy select Install security updates automatically
 d-i base-installer/install-recommends boolean false
@@ -81,7 +81,31 @@ d-i netcfg/target_network_config select none
 d-i netcfg/link_wait_timeout string 60
 d-i netcfg/dhcp_timeout string 30
 d-i netcfg/dhcpv6_timeout string 30
+d-i netcfg/dhcp_failed note
+d-i netcfg/dhcp_options select Configure network manually
+{% if ansible_facts["default_ipv4"]["gateway"] is defined %}
+d-i netcfg/choose_interface select {{ ansible_facts["default_ipv4"]["interface"] }}
+{% elif ansible_facts["default_ipv6"]["gateway"] is defined %}
+d-i netcfg/choose_interface select {{ ansible_facts["default_ipv6"]["interface"] }}
+{% else %}
 d-i netcfg/choose_interface select auto
+{% endif %}
+
+{% if ansible_facts["default_ipv4"]["gateway"] is defined %}
+# IPv4 static
+d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv4"]["address"] }}
+d-i netcfg/get_netmask string {{ ansible_facts["default_ipv4"]["netmask"] }}
+d-i netcfg/get_gateway string {{ ansible_facts["default_ipv4"]["gateway"] }}
+d-i netcfg/get_nameservers string 1.1.1.1
+d-i netcfg/confirm_static boolean true
+{% elif ansible_facts["default_ipv6"]["gateway"] is defined %}
+# IPv6 static
+d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv6"]["address"] }}
+d-i netcfg/get_netmask string {{ ansible_facts["default_ipv6"]["prefix"] }}
+d-i netcfg/get_gateway string {{ ansible_facts["default_ipv6"]["gateway"] }}
+d-i netcfg/get_nameservers string 2606:4700:4700::1111
+d-i netcfg/confirm_static boolean true
+{% endif %}
 
 # Partitioning
 d-i user-setup/encrypt-home boolean false
@@ -162,8 +186,13 @@ raid1 ::                                                        \
 
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
-  DISK1="$(list-devices disk | head -1 )" ; \
+{% if debian_preseed_disk_path %}
+  DISK1="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
+  DISK2="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
+{% else %}
+  DISK1="$(list-devices disk | sort | head -1 )" ; \
   DISK2="$(list-devices disk | head -2 | tail -1)" ; \
+{% endif %}
   PART1="$(echo $DISK1 | sed '/nvme/s/$/p/' )" ; \
   PART2="$(echo $DISK2 | sed '/nvme/s/$/p/' )" ; \
   if [ "${DISK1}" = "${DISK2}" ]; then \

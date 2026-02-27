@@ -21,11 +21,8 @@ debian_preseed_vgname: data
 debian_preseed_disk: ~
 # debian_preseed_disk: /dev/sda
 
+# lsblk -Sn, lsblk -Nn
 debian_preseed_disk_path: ~
-#
-#     lsblk -Sn
-#     udevadm info /dev/sdc | grep /devices
-# debian_preseed_disk_path: /sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/host0/target0:0:8/0:0:8:0/block/
 
 debian_preseed_mirror: ~ # ftp.nl.debian.org
 

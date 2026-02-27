@@ -1,13 +1,23 @@
 
 - name: Bonding helpers
   become: true
-  template:
+  ansible.builtin.template:
     src: "{{ item.name }}.j2"
     dest: "{{ item.path }}/{{ item.name }}"
     mode: 0755
   with_items:
-    - { name: network.sh,               path: /boot/preseed }
-    - { name: 70-persistent-net.rules,  path: /boot/preseed/etc/udev/rules.d }
+    - { name: network.sh,               path: "/boot/preseed" }
+    - { name: 70-persistent-net.rules,  path: "/boot/preseed/etc/udev/rules.d" }
     - { name: S25bonding-interfaces,    path: "/boot/preseed{{ debian_installer_path }}" }
-    - { name: if-keep-up.sh,            path: /boot/preseed/usr/bin }
+    - { name: if-keep-up.sh,            path: "/boot/preseed/usr/bin" }
   notify: Repack-initrd
+
+# - name: NVME pinning
+#   become: true
+#   ansible.builtin.template:
+#     src: "{{ item.name }}.j2"
+#     dest: "{{ item.path }}/{{ item.name }}"
+#     mode: 0755
+#   with_items:
+#     - { name: 70-persistent-nvme.rules,  path: /boot/preseed/etc/udev/rules.d }
+#   notify: Repack-initrd

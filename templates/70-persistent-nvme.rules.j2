@@ -1,0 +1,4 @@
+{% for device in ansible_facts['devices']|sort %}
+{% if device.startswith('nvme') %}
+KERNEL=="nvme*[0-9]n*[0-9]", SUBSYSTEM=="block", ACTION=="add", ATTRS{serial}=="{{ ansible_facts['devices'][device]['serial'] }}" ATTRS{model}=="{{ ansible_facts['devices'][device]['model'] }}" NAME="{{ device }}"
+{% endif %}{% endfor %}
