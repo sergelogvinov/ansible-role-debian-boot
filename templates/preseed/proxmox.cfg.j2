@@ -191,7 +191,7 @@ d-i partman/early_command string \
   DISK2="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
 {% else %}
   DISK1="$(list-devices disk | sort | head -1 )" ; \
-  DISK2="$(list-devices disk | head -2 | tail -1)" ; \
+  DISK2="$(list-devices disk | sort | head -2 | tail -1)" ; \
 {% endif %}
   PART1="$(echo $DISK1 | sed '/nvme/s/$/p/' )" ; \
   PART2="$(echo $DISK2 | sed '/nvme/s/$/p/' )" ; \
