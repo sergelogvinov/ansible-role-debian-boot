@@ -78,9 +78,9 @@ d-i base-installer/install-recommends boolean false
 # Network
 # file /etc/network/interfaces will handle by ansible
 d-i netcfg/target_network_config select none
-d-i netcfg/link_wait_timeout string 60
-d-i netcfg/dhcp_timeout string 30
-d-i netcfg/dhcpv6_timeout string 30
+d-i netcfg/link_wait_timeout string 120
+d-i netcfg/dhcp_timeout string 60
+d-i netcfg/dhcpv6_timeout string 60
 d-i netcfg/dhcp_failed note
 d-i netcfg/dhcp_options select Configure network manually
 {% if ansible_facts["default_ipv4"]["gateway"] is defined %}
@@ -187,8 +187,8 @@ raid1 ::                                                        \
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
 {% if debian_preseed_disk_path %}
-  DISK1="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
-  DISK2="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
+  DISK1="/dev/{{ debian_preseed_disk_path }}" ; \
+  DISK2="/dev/{{ debian_preseed_disk_path }}" ; \
 {% else %}
   DISK1="$(list-devices disk | sort | head -1 )" ; \
   DISK2="$(list-devices disk | sort | head -2 | tail -1)" ; \
@@ -197,6 +197,7 @@ d-i partman/early_command string \
   PART2="$(echo $DISK2 | sed '/nvme/s/$/p/' )" ; \
   if [ "${DISK1}" = "${DISK2}" ]; then \
   debconf-set grub-installer/bootdev "${DISK1}" ; \
+  debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1}" ; \
   debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3 . 1 2 0 lvm - ${PART1}5 ." ; \
   else \

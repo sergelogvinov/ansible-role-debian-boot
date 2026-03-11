@@ -1,6 +1,8 @@
 #!/bin/sh
 set -x
 
+sleep 5
+
 echo "options timeout:5 attempts:3" > /etc/resolv.conf
 {% if not '1.1.1.1' in ansible_facts['dns']['nameservers'] %}
 echo "nameserver 1.1.1.1" >> /etc/resolv.conf
@@ -21,7 +23,7 @@ cp /etc/resolv.conf /etc/resolv.conf.debian
 modprobe bonding
 {% endif %}
 
-sleep 5
+sleep 15
 
 {% set slaves = [] %}
 {% set inx = namespace(value=0) %}
@@ -54,6 +56,8 @@ ip addr add {{ iface.ipv4.address }}/{{ iface.ipv4.prefix }} dev bond{{ inx.valu
 ip link set bond{{ inx.value }} up
 {% set inx.value = inx.value + 1 %}
 {% endfor %}
+
+sleep 5
 
 logger -t debian-boot "INFO: set default route on {{ debian_interface }}"
 {% if ansible_facts['default_ipv4']['gateway'] is defined %}

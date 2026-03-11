@@ -170,11 +170,12 @@ one ::                                                          \
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
 {% if debian_preseed_disk_path %}
-  DISK1="/dev/$(ls {{ debian_preseed_disk_path }})" ; \
+  DISK1="/dev/{{ debian_preseed_disk_path }}" ; \
 {% else %}
   DISK1="{{ '$(list-devices disk | grep '+debian_preseed_disk+' | head -1 )' if debian_preseed_disk else '$(list-devices disk | head -1 )' }}" ; \
 {% endif %}
   debconf-set grub-installer/bootdev "${DISK1}" ; \
+  debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1}" ;
 
 d-i partman-efi/non_efi_system boolean true
