@@ -1,6 +1,6 @@
 - name: Copy preseed from local
   become: true
-  template:
+  ansible.builtin.template:
     src: "preseed/{{ debian_preseed }}.j2"
     dest: "/boot/preseed/debian-preseed.cfg"
     mode: 0644
@@ -14,4 +14,15 @@
     dest: "/boot/preseed/debian-preseed.cfg"
     mode: 0644
   when: debian_preseed is url
+  notify: Repack-initrd
+
+- name: Copy helpers
+  become: true
+  ansible.builtin.template:
+    src: "{{ item.name }}.j2"
+    dest: "{{ item.path }}/{{ item.name }}"
+    mode: 0755
+  with_items:
+    - { name: 70-persistent-net.rules,  path: "/boot/preseed/etc/udev/rules.d" }
+    - { name: network.sh,               path: "/boot/preseed" }
   notify: Repack-initrd

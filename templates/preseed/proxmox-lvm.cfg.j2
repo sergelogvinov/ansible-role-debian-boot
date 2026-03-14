@@ -70,7 +70,7 @@ locales locales/default_environment_locale      select          en_US.UTF-8
 
 tasksel tasksel/first multiselect standard, ssh-server
 d-i tasksel/first multiselect standard, ssh-server
-d-i pkgsel/include string openssh-server proxmox-kernel-6.2 git ansible bridge-utils
+d-i pkgsel/include string {{ debian_preseed_packages }}
 d-i pkgsel/updatedb boolean true
 d-i pkgsel/update-policy select Install security updates automatically
 d-i base-installer/install-recommends boolean false
@@ -81,7 +81,28 @@ d-i netcfg/target_network_config select none
 d-i netcfg/link_wait_timeout string 15
 d-i netcfg/dhcp_timeout string 10
 d-i netcfg/dhcpv6_timeout string 10
+d-i netcfg/dhcp_failed note
+{% if ansible_facts["default_ipv4"]["gateway"] is defined %}
+# IPv4 static
+d-i netcfg/dhcp_options select Configure network manually
+d-i netcfg/choose_interface select {{ ansible_facts["default_ipv4"]["interface"] }}
+d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv4"]["address"] }}
+d-i netcfg/get_netmask string {{ ansible_facts["default_ipv4"]["netmask"] }}
+d-i netcfg/get_gateway string {{ ansible_facts["default_ipv4"]["gateway"] }}
+d-i netcfg/get_nameservers string {{ ansible_facts["dns"]["nameservers"] | default(["1.1.1.1"]) | join(" ") }}
+d-i netcfg/confirm_static boolean true
+{% elif ansible_facts["default_ipv6"]["gateway"] is defined %}
+# IPv6 static
+d-i netcfg/dhcp_options select Configure network manually
+d-i netcfg/choose_interface select {{ ansible_facts["default_ipv6"]["interface"] }}
+d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv6"]["address"] }}
+d-i netcfg/get_netmask string {{ ansible_facts["default_ipv6"]["prefix"] }}
+d-i netcfg/get_gateway string {{ ansible_facts["default_ipv6"]["gateway"] }}
+d-i netcfg/get_nameservers string {{ ansible_facts["dns"]["nameservers"] | default(["2606:4700:4700::1111"]) | join(" ") }}
+d-i netcfg/confirm_static boolean true
+{% else %}
 d-i netcfg/choose_interface select auto
+{% endif %}
 
 # Partitioning
 d-i user-setup/encrypt-home boolean false
@@ -188,7 +209,7 @@ d-i preseed/late_command string sed -i 's/PermitRootLogin .*/PermitRootLogin Yes
   wget -O /target/root/.ssh/authorized_keys {{ url if debian_sshkey is url else 'https://github.com/sergelogvinov.keys' }}; \
   chmod 0600 /target/root/.ssh/authorized_keys; \
   lvremove -f /dev/{{debian_preseed_vgname}}/keep; {% if debian_rebuild_initrd %}cp /network.sh /target/root/network.sh;{% endif %} \
-  wget -O /target/root/proxmox-playbook.yaml https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/bookworm/proxmox-playbook.yaml; \
+  wget -O /target/root/proxmox-playbook.yaml https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox-playbook.yaml; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-system.git,main; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-iptables.git,main; \
   in-target mkdir /dev/shm; \

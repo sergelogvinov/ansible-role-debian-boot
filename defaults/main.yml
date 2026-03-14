@@ -3,7 +3,7 @@ debian_version: trixie
 debian_release: current
 
 debian_console: ""
-debian_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"
+debian_interface: "{{ ansible_facts['default_ipv4']['interface'] | default(ansible_facts['default_ipv6']['interface']) }}"
 
 # https://www.debian.org/releases/buster/amd64/apbs02.en.html
 debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en_US.UTF-8 priority=critical {{ debian_cmdline_net }} {{ debian_cmdline_addon }}"
