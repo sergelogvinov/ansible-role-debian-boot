@@ -55,7 +55,7 @@ ip addr add {{ addr.address }}/{{ addr.prefix }} dev {{ interface }}
 {% if ansible_facts["default_ipv4"]["gateway"] is defined %}
 ip link set {{ ansible_facts["default_ipv4"]["interface"] }} up
 ip addr add {{ ansible_facts["default_ipv4"]["address"] }}/{{ ansible_facts["default_ipv4"]["prefix"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }}
-ip route add default via {{ ansible_facts["default_ipv4"]["gateway"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }} metric 2048
+ip route add default via {{ ansible_facts["default_ipv4"]["gateway"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }} metric 2048 {{ 'onlink' if ansible_facts["default_ipv4"]["prefix"] == 32 else '' }}
 {% endif %}
 {% if ansible_facts["default_ipv6"]["gateway"] is defined %}
 ip link set {{ ansible_facts["default_ipv6"]["interface"] }} up

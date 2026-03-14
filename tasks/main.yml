@@ -87,7 +87,7 @@
   when: debian_rebuild_initrd
 
 - import_tasks: bond.yml
-  when: debian_rebuild_initrd
+  when: debian_rebuild_initrd and "bond0" in ansible_facts["interfaces"]
 
 - meta: flush_handlers
 

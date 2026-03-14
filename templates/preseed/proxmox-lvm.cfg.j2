@@ -78,27 +78,30 @@ d-i base-installer/install-recommends boolean false
 # Network
 # file /etc/network/interfaces will handle by ansible
 d-i netcfg/target_network_config select none
-d-i netcfg/link_wait_timeout string 15
-d-i netcfg/dhcp_timeout string 10
-d-i netcfg/dhcpv6_timeout string 10
-d-i netcfg/dhcp_failed note
+d-i netcfg/link_wait_timeout string 120
+d-i netcfg/dhcp_timeout string 60
+d-i netcfg/dhcpv6_timeout string 60
+d-i netcfg/get_hostname string {{ inventory_hostname }}
+d-i netcfg/get_domain string {{ ansible_facts["domain"] }}
 {% if ansible_facts["default_ipv4"]["gateway"] is defined %}
 # IPv4 static
+d-i netcfg/disable_dhcp boolean true
 d-i netcfg/dhcp_options select Configure network manually
 d-i netcfg/choose_interface select {{ ansible_facts["default_ipv4"]["interface"] }}
 d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv4"]["address"] }}
 d-i netcfg/get_netmask string {{ ansible_facts["default_ipv4"]["netmask"] }}
 d-i netcfg/get_gateway string {{ ansible_facts["default_ipv4"]["gateway"] }}
-d-i netcfg/get_nameservers string {{ ansible_facts["dns"]["nameservers"] | default(["1.1.1.1"]) | join(" ") }}
+d-i netcfg/get_nameservers string 1.1.1.1 {{ ansible_facts["dns"]["nameservers"] | default(["8.8.8.8"]) | join(" ") }}
 d-i netcfg/confirm_static boolean true
 {% elif ansible_facts["default_ipv6"]["gateway"] is defined %}
 # IPv6 static
+d-i netcfg/disable_dhcp boolean true
 d-i netcfg/dhcp_options select Configure network manually
 d-i netcfg/choose_interface select {{ ansible_facts["default_ipv6"]["interface"] }}
 d-i netcfg/get_ipaddress string {{ ansible_facts["default_ipv6"]["address"] }}
 d-i netcfg/get_netmask string {{ ansible_facts["default_ipv6"]["prefix"] }}
 d-i netcfg/get_gateway string {{ ansible_facts["default_ipv6"]["gateway"] }}
-d-i netcfg/get_nameservers string {{ ansible_facts["dns"]["nameservers"] | default(["2606:4700:4700::1111"]) | join(" ") }}
+d-i netcfg/get_nameservers string 2606:4700:4700::1111 {{ ansible_facts["dns"]["nameservers"] | default(["2001:4860:4860::8888"]) | join(" ") }}
 d-i netcfg/confirm_static boolean true
 {% else %}
 d-i netcfg/choose_interface select auto
