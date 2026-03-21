@@ -63,7 +63,7 @@ logger -t debian-boot "INFO: set default route on {{ debian_interface }}"
 {% if ansible_facts['default_ipv4']['gateway'] is defined %}
 {% set cidrv4 = ansible_facts['default_ipv4']['address'] + '/' + ansible_facts['default_ipv4']['prefix'] %}
 {% if not (ansible_facts['default_ipv4']['gateway'] | ansible.utils.ipaddr(cidrv4)) %}
-route add {{ ansible_facts['default_ipv4']['gateway'] }}/32 dev {{ debian_interface }} link metric 2048 ||:
+ip route add {{ ansible_facts['default_ipv4']['gateway'] }}/32 dev {{ debian_interface }} link metric 2048 ||:
 {% endif %}
 ip route add default via {{ ansible_facts['default_ipv4']['gateway'] }} dev {{ debian_interface }} metric 2048 ||:
 {% endif %}

@@ -53,9 +53,13 @@ ip addr add {{ addr.address }}/{{ addr.prefix }} dev {{ interface }}
 {% endfor %}
 
 {% if ansible_facts["default_ipv4"]["gateway"] is defined %}
+{% set cidrv4 = ansible_facts['default_ipv4']['address'] + '/' + ansible_facts['default_ipv4']['prefix'] %}
 ip link set {{ ansible_facts["default_ipv4"]["interface"] }} up
-ip addr add {{ ansible_facts["default_ipv4"]["address"] }}/{{ ansible_facts["default_ipv4"]["prefix"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }}
-ip route add default via {{ ansible_facts["default_ipv4"]["gateway"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }} metric 2048 {{ 'onlink' if ansible_facts["default_ipv4"]["prefix"] == 32 else '' }}
+ip addr add {{ cidrv4 }} dev {{ ansible_facts["default_ipv4"]["interface"] }}
+{% if not (ansible_facts['default_ipv4']['gateway'] | ansible.utils.ipaddr(cidrv4)) %}
+ip route add {{ ansible_facts['default_ipv4']['gateway'] }}/32 dev {{ debian_interface }} link metric 2048
+{% endif %}
+ip route add default via {{ ansible_facts["default_ipv4"]["gateway"] }} dev {{ ansible_facts["default_ipv4"]["interface"] }} metric 2048
 {% endif %}
 {% if ansible_facts["default_ipv6"]["gateway"] is defined %}
 ip link set {{ ansible_facts["default_ipv6"]["interface"] }} up
