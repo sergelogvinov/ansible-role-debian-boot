@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.4.0...v0.5.0) (2026-05-10)
+
+
+### Features
+
+* network onlink definition ([8fc9efc](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/8fc9efc8d82e275009935f93ccbe1bc23f4e8a88))
+* uefi boot unly ([eb3e439](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/eb3e439a4005d283caf7be66d3306669d155668b))
+
 ## [0.4.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.3.1...v0.4.0) (2026-03-14)
 
 
