@@ -2,7 +2,7 @@
 debian_version: trixie
 debian_release: current
 
-debian_console: ""
+debian_console: "{{ ansible_facts['proc_cmdline']['console']|default([])|map('regex_replace', '^(.*)$', 'console=\\1')|join(' ') }}"
 debian_interface: "{{ ansible_facts['default_ipv4']['interface'] | default(ansible_facts['default_ipv6']['interface']) }}"
 
 # https://www.debian.org/releases/buster/amd64/apbs02.en.html
@@ -12,6 +12,7 @@ debian_cmdline_net: "interface={{ debian_interface }} netcfg/disable_dhcp=true n
 debian_cmdline_addon: ""
 # debian_cmdline_addon: anna/choose_modules=network-console
 
+debian_bootloader: uefi
 debian_preseed: "proxmox.cfg"
 # debian_preseed: "https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox.cfg"
 

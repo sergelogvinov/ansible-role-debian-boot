@@ -18,7 +18,8 @@ modprobe bonding
 
 {% for interface in ansible_facts["interfaces"]|sort %}
 {% set iface = ansible_facts[interface] %}
-{% if iface.type is defined and iface.type == "ether" and iface.pciid is defined %}
+{% if iface.type is defined and iface.type == "ether" and iface.pciid is defined and
+      iface.module is defined and (not iface.module in ['cdc_ether']) %}
 # {{ interface }} -> {{ iface.pciid }}/{{ iface.perm_macaddress | default(iface.macaddress) }}
 {% endif %}
 {% endfor %}

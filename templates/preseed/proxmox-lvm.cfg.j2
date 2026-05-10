@@ -31,11 +31,12 @@ d-i finish-install/reboot_in_progress note
 d-i clock-setup/utc boolean true
 d-i clock-setup/ntp boolean true
 d-i clock-setup/ntp-server string 2.debian.pool.ntp.org
-d-i keymap select en
 d-i time/zone string Etc/UTC
+d-i keymap select en
 
 # Mirror
 d-i mirror/country string {{ 'manual' if debian_preseed_mirror else 'NL' }}
+d-i mirror/protocol string http
 d-i mirror/http/mirror select deb.debian.org
 d-i mirror/http/hostname string {{ debian_preseed_mirror if debian_preseed_mirror else 'deb.debian.org' }}
 d-i mirror/http/directory string /debian
@@ -144,10 +145,12 @@ d-i partman/default_label string gpt
 
 d-i partman-auto/expert_recipe string                           \
 one ::                                                          \
+{% if debian_bootloader == "bios" %}
   1 1 1 free                                                    \
      $bios_boot{ }                                              \
      method{ biosgrub }                                         \
   .                                                             \
+{% endif %}
   538 538 1075 vfat                                             \
      $primary{ }                                                \
      $iflabel{ gpt }                                            \
@@ -193,6 +196,7 @@ one ::                                                          \
 
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
+  swapoff -a ; \
 {% if debian_preseed_disk_path %}
   DISK1="/dev/{{ debian_preseed_disk_path }}" ; \
 {% else %}
@@ -202,8 +206,8 @@ d-i partman/early_command string \
   debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1}" ;
 
-d-i partman-efi/non_efi_system boolean true
-d-i grub2/force_efi_extra_removable boolean true
+d-i partman-efi/non_efi_system boolean {{ 'true' if debian_bootloader == "bios" else 'false' }}
+d-i grub-installer/force-efi-extra-removable boolean true
 d-i grub-installer/only_debian boolean true
 d-i grub-installer/with_other_os boolean true
 
