@@ -65,6 +65,14 @@
   when: debian_grub and ansible_facts['os_family'] == "RedHat"
   notify: Update-grub
 
+- name: Delete timeout for grub menu
+  become: true
+  file:
+    path: /etc/default/grub.d/15_timeout.cfg
+    state: absent
+  when: debian_grub
+  notify: Update-grub
+
 - name: Prepare directory
   become: true
   file:
