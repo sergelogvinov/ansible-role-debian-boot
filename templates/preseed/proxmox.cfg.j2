@@ -153,13 +153,17 @@ raid1 ::                                                        \
      $bios_boot{ }                                              \
      method{ biosgrub }                                         \
   .                                                             \
-{% endif %}
   538 538 1075 vfat                                             \
      $primary{ }                                                \
      $iflabel{ gpt }                                            \
      method{ efi } format{ }                                    \
      mountpoint{ /boot/efi }                                    \
   .                                                             \
+{% else %}
+  538 538 1075 raid                                             \
+     $lvmignore{ } $primary{ } method{ raid }                   \
+  .                                                             \
+{% endif %}
   512 1024 1024 raid                                            \
      $lvmignore{ } $primary{ } method{ raid }                   \
      $bootable{ }                                               \
@@ -193,6 +197,8 @@ raid1 ::                                                        \
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
   swapoff -a ; \
+  vgchange -an {{ debian_preseed_vgname }} 2>/dev/null || true ; \
+  vgremove -ff -y {{ debian_preseed_vgname }} 2>/dev/null || true ; \
 {% if debian_preseed_disk_path %}
   DISK1="/dev/{{ debian_preseed_disk_path }}" ; \
   DISK2="/dev/{{ debian_preseed_disk_path }}" ; \
@@ -215,20 +221,28 @@ d-i partman/early_command string \
   debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}3#${PART2}3 . 1 2 0 lvm - ${PART1}5#${PART2}5 ." ; \
   fi ;
 {% else %}
+  mkdir -p /etc/mdadm ; \
+  echo "CREATE metadata=1.0" >> /etc/mdadm/mdadm.conf ; \
+  echo "${DISK1} ${DISK2}" > /tmp/efi-disks ; \
   if [ "${DISK1}" = "${DISK2}" ]; then \
   debconf-set grub-installer/bootdev "${DISK1}" ; \
   debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1}" ; \
-  debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}2 . 1 2 0 lvm - ${PART1}4 ." ; \
+  debconf-set partman-auto-raid/recipe "1 2 0 fat32 /boot/efi ${PART1}1 . 1 2 0 ext4 /boot ${PART1}2 . 1 2 0 lvm - ${PART1}4 ." ; \
   else \
   debconf-set grub-installer/bootdev "${DISK1}" ; \
   debconf-set grub-installer/choose_bootdev "${DISK1}" ; \
   debconf-set partman-auto/disk "${DISK1} ${DISK2}" ; \
-  debconf-set partman-auto-raid/recipe "1 2 0 ext4 /boot ${PART1}2#${PART2}2 . 1 2 0 lvm - ${PART1}4#${PART2}4 ." ; \
+  debconf-set partman-auto-raid/recipe "1 2 0 fat32 /boot/efi ${PART1}1#${PART2}1 . 1 2 0 ext4 /boot ${PART1}2#${PART2}2 . 1 2 0 lvm - ${PART1}4#${PART2}4 ." ; \
   fi ;
 {% endif %}
 
 d-i partman-efi/non_efi_system boolean {{ 'true' if debian_bootloader == "bios" else 'false' }}
+{% if debian_bootloader != "bios" %}
+# /boot/efi is on md raid1, so partman-efi does not see an ESP and grub can't register NVRAM entry
+d-i partman-efi/no_efi boolean false
+d-i grub-installer/update-nvram boolean false
+{% endif %}
 d-i grub-installer/force-efi-extra-removable boolean true
 d-i grub-installer/only_debian boolean true
 d-i grub-installer/with_other_os boolean true
@@ -237,7 +251,14 @@ d-i preseed/late_command string sed -i 's/PermitRootLogin .*/PermitRootLogin Yes
   mkdir /target/root/.ssh; \
   wget -O /target/root/.ssh/authorized_keys {{ url if debian_sshkey is url else 'https://github.com/sergelogvinov.keys' }}; \
   chmod 0600 /target/root/.ssh/authorized_keys; \
-  lvremove -f /dev/{{debian_preseed_vgname}}/keep; {% if debian_rebuild_initrd %}cp /network.sh /target/root/network.sh;{% endif %} \
+  lvremove -f /dev/{{debian_preseed_vgname}}/keep; \
+  if [ -s /tmp/efi-disks ]; then \
+    for DISK in $(cat /tmp/efi-disks | tr ' ' '\n' | sort -u); do \
+      in-target sfdisk --no-reread --part-type ${DISK} 1 C12A7328-F81F-11D2-BA4B-00A0C93EC93B || true; \
+    done; \
+    echo "grub-efi-amd64 grub2/update_nvram boolean false" | chroot /target debconf-set-selections; \
+  fi; \
+  {% if debian_rebuild_initrd %}cp /network.sh /target/root/network.sh;{% endif %} \
   wget -O /target/root/proxmox-playbook.yaml https://raw.githubusercontent.com/sergelogvinov/ansible-role-debian-boot/main/files/{{ debian_version }}/proxmox-playbook.yaml; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-system.git,main; \
   in-target ansible-galaxy role install git+https://github.com/sergelogvinov/ansible-role-iptables.git,main; \

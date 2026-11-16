@@ -1,3 +1,8 @@
+# Editor/IDE
+.idea/
+.vscode/
+.devcontainer/
+#
 facts/
 tests/
 ansible.cfg

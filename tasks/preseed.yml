@@ -23,6 +23,7 @@
     dest: "{{ item.path }}/{{ item.name }}"
     mode: 0755
   with_items:
-    - { name: 70-persistent-net.rules,  path: "/boot/preseed/etc/udev/rules.d" }
-    - { name: network.sh,               path: "/boot/preseed" }
+    - { name: 70-persistent-net.rules,   path: "/boot/preseed/etc/udev/rules.d" }
+    - { name: 70-persistent-nvme.rules,  path: "/boot/preseed/etc/udev/rules.d" }
+    - { name: network.sh,                path: "/boot/preseed" }
   notify: Repack-initrd
