@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.4.0...v0.5.0) (2026-11-19)
+
+
+### Features
+
+* efi on md-raid ([647db0c](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/647db0c2cf944e95b17f2d2cf74e7a88c0dee56c))
+* network onlink definition ([8fc9efc](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/8fc9efc8d82e275009935f93ccbe1bc23f4e8a88))
+* remote syslog ([ef8909e](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/ef8909e8174a3de13e2b690ba83a29e9c72adc83))
+* uefi boot unly ([eb3e439](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/eb3e439a4005d283caf7be66d3306669d155668b))
+
+
+### Bug Fixes
+
+* boot timeout ([b7c2885](https://github.com/sergelogvinov/ansible-role-debian-boot/commit/b7c28851628892f20848cd06c7642e365b18f3f5))
+
 ## [0.4.0](https://github.com/sergelogvinov/ansible-role-debian-boot/compare/v0.3.1...v0.4.0) (2026-03-14)
 
 
