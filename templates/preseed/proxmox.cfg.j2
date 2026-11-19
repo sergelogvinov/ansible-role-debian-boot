@@ -129,7 +129,9 @@ d-i partman-auto-lvm/new_vg_name string {{ debian_preseed_vgname }}
 d-i partman-auto-lvm/new_vg_name_exists string {{ debian_preseed_vgname }}
 
 d-i partman-lvm/vgdelete_names string {{ debian_preseed_vgname }}
+d-i partman-auto/purge_lvm_from_device boolean true
 d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-lvm/device_remove_lvm_span boolean true
 d-i partman-lvm/confirm boolean true
 d-i partman-lvm/confirm_nooverwrite boolean true
 
@@ -197,8 +199,9 @@ raid1 ::                                                        \
 d-i anna/choose_modules multiselect openssh-client-udeb openssh-server-udeb
 d-i partman/early_command string \
   swapoff -a ; \
-  vgchange -an {{ debian_preseed_vgname }} 2>/dev/null || true ; \
+  vgchange -an 2>/dev/null || true ; \
   vgremove -ff -y {{ debian_preseed_vgname }} 2>/dev/null || true ; \
+  mdadm --stop --scan 2>/dev/null || true ; \
 {% if debian_preseed_disk_path %}
   DISK1="/dev/{{ debian_preseed_disk_path }}" ; \
   DISK2="/dev/{{ debian_preseed_disk_path }}" ; \

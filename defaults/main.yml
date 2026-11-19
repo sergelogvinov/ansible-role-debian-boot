@@ -6,8 +6,14 @@ debian_console: "{{ ansible_facts['proc_cmdline']['console']|default([])|map('re
 debian_interface: "{{ ansible_facts['default_ipv4']['interface'] | default(ansible_facts['default_ipv6']['interface']) }}"
 
 # https://www.debian.org/releases/buster/amd64/apbs02.en.html
-debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en_US.UTF-8 priority=critical {{ debian_cmdline_net }} {{ debian_cmdline_addon }}"
+debian_cmdline: "{{ debian_console }} keymap=us language=en country=US locale=en_US.UTF-8 priority=critical {{ debian_cmdline_net }} {{ debian_cmdline_log }} {{ debian_cmdline_addon }}"
 debian_cmdline_net: "interface={{ debian_interface }} netcfg/disable_dhcp=true netcfg/get_ipaddress={{ ansible_facts['default_ipv4']['address'] }} netcfg/get_netmask={{ ansible_facts['default_ipv4']['netmask'] }} netcfg/get_gateway={{ ansible_facts['default_ipv4']['gateway'] }} netcfg/get_nameservers=1.1.1.1 hostname={{ inventory_hostname }} domain={{ ansible_facts['domain'] }}"
+
+debian_cmdline_log: "{{ ('log_host=' ~ debian_log_host ~ ' log_port=' ~ debian_log_port) if debian_log_host else '' }}"
+
+# Send installer logs to the remote syslog server (UDP)
+debian_log_host: ~
+debian_log_port: 514
 
 debian_cmdline_addon: ""
 # debian_cmdline_addon: anna/choose_modules=network-console
@@ -27,7 +33,7 @@ debian_preseed_disk_path: ~
 
 debian_preseed_mirror: ~ # ftp.nl.debian.org
 
-debian_sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDd+wfWIKi1dDZuCsd/zNw2n4WuHHa21N/Ltmo3umH2d" # "https://github.com/sergelogvinov.keys"
+debian_sshkey: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIITLHr/GBdnbZeZgE+oSLFpy6F9D9dLXIQP0YNxHPPRJ" # "https://github.com/sergelogvinov.keys"
 
 debian_grub: false
 debian_kexec: false

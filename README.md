@@ -27,6 +27,8 @@ Useful variables
 6. ```debian_preseed: proxmox.cfg``` - preseed file name
     * proxmox.cfg - preseed file for proxmox with software raid1
     * proxmox-lvm.cfg - preseed file for proxmox with one disk
+7. ```debian_log_host: 192.168.1.10``` - send installer logs to the remote syslog server (UDP), disabled by default
+8. ```debian_log_port: 514``` - remote syslog server port
 
 ## Prepare and launch Debian Installer
 
